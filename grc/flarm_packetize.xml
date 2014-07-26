@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<block>
+  <name>Packetize</name>
+  <key>flarm_packetize</key>
+  <category>FLARM</category>
+  <import>import flarm</import>
+  <make>flarm.packetize()</make>
+
+  <sink>
+    <name>in</name>
+    <type>byte</type>
+  </sink>
+</block>
