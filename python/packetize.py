@@ -27,8 +27,8 @@ class packetize(gr.basic_block):
     docstring for block packetize
     """
 
-    # 0101 0000 1100 1001
-    sync_word = numpy.array([0,1, 1,0, 0,1, 1,0, 0,1, 0,1, 0,1, 0,1, 1,0, 1,0, 0,1, 0,1, 1,0, 0,1, 0,1, 1,0],dtype=numpy.int8).tostring()
+    # 0000 1100 1001 1010 1001 0011
+    sync_word = numpy.array([0,1, 0,1, 0,1, 0,1, 1,0, 1,0, 0,1, 0,1, 1,0, 0,1, 0,1, 1,0, 1,0, 0,1, 1,0, 0,1, 1,0, 0,1, 0,1, 1,0, 0,1, 0,1, 1,0, 1,0],dtype=numpy.int8).tostring()
 
     def __init__(self):
         gr.basic_block.__init__(self,
@@ -50,18 +50,21 @@ class packetize(gr.basic_block):
             self.process_packet(man_bits[0::2])
 
     def process_packet(self, bits):
-        print bits.tostring().replace("\x00","0").replace("\x01","1")
+        bytes = numpy.packbits(bits)
+        for byte in bytes:
+            print "{0:02x}".format(byte),
+        print
 
     def general_work(self, input_items, output_items):
         # Wait until we get at least one packet worth of Manchester bits
-        if len(input_items[0]) < 472:
+        if len(input_items[0]) < 464:
             self.consume(0, 0)
             return 0
 
-        index = input_items[0].tostring().find(self.sync_word, 0, -472+32)
+        index = input_items[0].tostring().find(self.sync_word, 0, -464+48)
         while index != -1:
-            self.manchester_demod_packet(input_items[0][index:index+472])
-            index = input_items[0].tostring().find(self.sync_word, index+472, -472+32)
+            self.manchester_demod_packet(input_items[0][index:index+464])
+            index = input_items[0].tostring().find(self.sync_word, index+464, -464+48)
 
-        self.consume(0, len(input_items[0])-471)
+        self.consume(0, len(input_items[0])-463)
         return 0
