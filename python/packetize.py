@@ -51,9 +51,26 @@ class packetize(gr.basic_block):
 
     def process_packet(self, bits):
         bytes = numpy.packbits(bits)
-        for byte in bytes:
-            print "{0:02x}".format(byte),
-        print
+        if self.crc16(bytes) == 0:
+            for byte in bytes:
+                print "{0:02x}".format(byte),
+            print
+
+    def crc16(self, message):
+        poly = 0x1021
+        reg = 0xffff
+        for byte in message:
+            mask = 0x80
+            while mask != 0:
+                reg <<= 1
+                if byte & mask:
+                    reg ^= 1
+                mask >>= 1
+                if reg & 0x10000 != 0:
+                    reg &= 0xffff
+                    reg ^= poly
+        reg ^= 0x9335
+        return reg
 
     def general_work(self, input_items, output_items):
         # Wait until we get at least one packet worth of Manchester bits
