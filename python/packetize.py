@@ -21,6 +21,7 @@
 
 import numpy
 from gnuradio import gr
+from datetime import datetime
 
 class packetize(gr.basic_block):
     """
@@ -29,6 +30,19 @@ class packetize(gr.basic_block):
 
     # 0000 1100 1001 1010 1001 0011
     sync_word = numpy.array([0,1, 0,1, 0,1, 0,1, 1,0, 1,0, 0,1, 0,1, 1,0, 0,1, 0,1, 1,0, 1,0, 0,1, 1,0, 0,1, 1,0, 0,1, 0,1, 1,0, 0,1, 0,1, 1,0, 1,0],dtype=numpy.int8).tostring()
+
+    icao_table = {
+        "c06edf": ("C-GPZQ", "LS4",   "84"),
+        "c02487": ("C-FNVQ", "ASW20", "VQ"),
+        "c003b6": ("C-GBKN", "ASW20", "MZ"),
+        "c081b6": ("C-GXDD", "SZD55", "2D"),
+        "c06914": ("C-GNUP", "SZD55", "55"),
+        "c0789b": ("C-GTRM", "ASW20", "RM"),
+        "c05fdd": ("C-GKHU", "ASW24", "M7"),
+        "c06208": ("C-GLDF", "LAK12", "Z7"),
+        "c007be": ("C-FCYF", "SZD55", "AT"),
+        "c06b5f": ("C-GORE", "PIK20", "GP")
+    }
 
     def __init__(self):
         gr.basic_block.__init__(self,
@@ -52,8 +66,19 @@ class packetize(gr.basic_block):
     def process_packet(self, bits):
         bytes = numpy.packbits(bits)
         if self.crc16(bytes) == 0:
-            for byte in bytes:
-                print "{0:02x}".format(byte),
+            print "    Time: " + datetime.now().isoformat()
+            #print "   Sync: {0:02x}{1:02x}{2:02x}".format(*bytes[0:3])
+            icao = "{0:02x}{1:02x}{2:02x}".format(bytes[5], bytes[4], bytes[3])
+            if icao in self.icao_table:
+                reg, typ, tail = self.icao_table[icao]
+                print "    ICAO: " + icao + " (Reg: " + reg + ", Type: " + typ + ", Tail: " + tail + ")"
+            else:
+                print "    ICAO: " + icao
+            print " Unknown: {0:02x}".format(bytes[6])
+            print "Cipher 1: {0:02x}{1:02x}{2:02x}{3:02x}{4:02x}{5:02x}{6:02x}{7:02x}".format(*bytes[7:15])
+            print "Cipher 2: {0:02x}{1:02x}{2:02x}{3:02x}{4:02x}{5:02x}{6:02x}{7:02x}".format(*bytes[15:23])
+            print " Unknown: {0:02x}{1:02x}{2:02x}{3:02x}".format(*bytes[23:27])
+            #print "    CRC: {0:02x}{1:02x}".format(*bytes[27:29])
             print
 
     def crc16(self, message):
