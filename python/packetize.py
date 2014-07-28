@@ -80,11 +80,12 @@ class packetize(gr.basic_block):
         "c06b5f": ("C-GORE", "PIK20", "GP")
     }
 
-    def __init__(self):
+    def __init__(self, channel):
         gr.basic_block.__init__(self,
             name="packetize",
             in_sig=[numpy.int8],
             out_sig=[])
+        self.channel = channel
 
     def forecast(self, noutput_items, ninput_items_required):
         ninput_items_required[0] = 5000
@@ -103,6 +104,7 @@ class packetize(gr.basic_block):
         bytes = numpy.packbits(bits)
         if self.crc16(bytes) == 0:
             print datetime.now().isoformat(),
+            print "Ch.{0:02}".format(self.channel),
             #print "{0:02x}{1:02x}{2:02x}".format(*bytes[0:3]),
             icao = "{0:02x}{1:02x}{2:02x}".format(bytes[5], bytes[4], bytes[3])
             print "ICAO: " + icao,

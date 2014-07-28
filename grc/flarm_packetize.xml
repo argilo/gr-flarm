@@ -4,7 +4,16 @@
   <key>flarm_packetize</key>
   <category>FLARM</category>
   <import>import flarm</import>
-  <make>flarm.packetize()</make>
+  <make>flarm.packetize($channel)</make>
+
+  <param>
+    <name>Channel</name>
+    <key>channel</key>
+    <value>32</value>
+    <type>int</type>
+  </param>
+  <check>$channel &gt;= 0</check>
+  <check>$channel &lt;= 64</check>
 
   <sink>
     <name>in</name>

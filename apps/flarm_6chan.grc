@@ -1,6 +1,123 @@
 <?xml version='1.0' encoding='ASCII'?>
 <flow_graph>
-  <timestamp>Sun Jul 27 20:24:40 2014</timestamp>
+  <timestamp>Mon Jul 28 06:22:13 2014</timestamp>
+  <block>
+    <key>options</key>
+    <param>
+      <key>id</key>
+      <value>flarm_6chan</value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>title</key>
+      <value></value>
+    </param>
+    <param>
+      <key>author</key>
+      <value></value>
+    </param>
+    <param>
+      <key>description</key>
+      <value></value>
+    </param>
+    <param>
+      <key>window_size</key>
+      <value>1280, 1600</value>
+    </param>
+    <param>
+      <key>generate_options</key>
+      <value>wx_gui</value>
+    </param>
+    <param>
+      <key>category</key>
+      <value>Custom</value>
+    </param>
+    <param>
+      <key>run_options</key>
+      <value>prompt</value>
+    </param>
+    <param>
+      <key>run</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>max_nouts</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>realtime_scheduling</key>
+      <value></value>
+    </param>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(10, 10)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+  </block>
+  <block>
+    <key>variable</key>
+    <param>
+      <key>id</key>
+      <value>bottom_channel</value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>value</key>
+      <value>29</value>
+    </param>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(10, 312)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+  </block>
+  <block>
+    <key>variable</key>
+    <param>
+      <key>id</key>
+      <value>center_freq</value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>value</key>
+      <value>902000000 + (channel_rate * (bottom_channel + 3))</value>
+    </param>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(10, 242)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+  </block>
   <block>
     <key>variable</key>
     <param>
@@ -22,33 +139,6 @@
     <param>
       <key>_coordinate</key>
       <value>(10, 170)</value>
-    </param>
-    <param>
-      <key>_rotation</key>
-      <value>0</value>
-    </param>
-  </block>
-  <block>
-    <key>variable</key>
-    <param>
-      <key>id</key>
-      <value>center_freq</value>
-    </param>
-    <param>
-      <key>_enabled</key>
-      <value>True</value>
-    </param>
-    <param>
-      <key>value</key>
-      <value>915000000 - (channel_rate / 2)</value>
-    </param>
-    <param>
-      <key>alias</key>
-      <value></value>
-    </param>
-    <param>
-      <key>_coordinate</key>
-      <value>(10, 242)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -457,33 +547,6 @@
     </param>
   </block>
   <block>
-    <key>flarm_packetize</key>
-    <param>
-      <key>id</key>
-      <value>flarm_packetize_0_1</value>
-    </param>
-    <param>
-      <key>_enabled</key>
-      <value>True</value>
-    </param>
-    <param>
-      <key>alias</key>
-      <value></value>
-    </param>
-    <param>
-      <key>affinity</key>
-      <value></value>
-    </param>
-    <param>
-      <key>_coordinate</key>
-      <value>(1157, 709)</value>
-    </param>
-    <param>
-      <key>_rotation</key>
-      <value>0</value>
-    </param>
-  </block>
-  <block>
     <key>digital_binary_slicer_fb</key>
     <param>
       <key>id</key>
@@ -558,33 +621,6 @@
     </param>
   </block>
   <block>
-    <key>flarm_packetize</key>
-    <param>
-      <key>id</key>
-      <value>flarm_packetize_0_0</value>
-    </param>
-    <param>
-      <key>_enabled</key>
-      <value>True</value>
-    </param>
-    <param>
-      <key>alias</key>
-      <value></value>
-    </param>
-    <param>
-      <key>affinity</key>
-      <value></value>
-    </param>
-    <param>
-      <key>_coordinate</key>
-      <value>(1157, 596)</value>
-    </param>
-    <param>
-      <key>_rotation</key>
-      <value>0</value>
-    </param>
-  </block>
-  <block>
     <key>digital_binary_slicer_fb</key>
     <param>
       <key>id</key>
@@ -613,33 +649,6 @@
     <param>
       <key>_coordinate</key>
       <value>(989, 596)</value>
-    </param>
-    <param>
-      <key>_rotation</key>
-      <value>0</value>
-    </param>
-  </block>
-  <block>
-    <key>flarm_packetize</key>
-    <param>
-      <key>id</key>
-      <value>flarm_packetize_0</value>
-    </param>
-    <param>
-      <key>_enabled</key>
-      <value>True</value>
-    </param>
-    <param>
-      <key>alias</key>
-      <value></value>
-    </param>
-    <param>
-      <key>affinity</key>
-      <value></value>
-    </param>
-    <param>
-      <key>_coordinate</key>
-      <value>(1157, 483)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -749,33 +758,6 @@
     <param>
       <key>_coordinate</key>
       <value>(989, 823)</value>
-    </param>
-    <param>
-      <key>_rotation</key>
-      <value>0</value>
-    </param>
-  </block>
-  <block>
-    <key>flarm_packetize</key>
-    <param>
-      <key>id</key>
-      <value>flarm_packetize_0_2</value>
-    </param>
-    <param>
-      <key>_enabled</key>
-      <value>True</value>
-    </param>
-    <param>
-      <key>alias</key>
-      <value></value>
-    </param>
-    <param>
-      <key>affinity</key>
-      <value></value>
-    </param>
-    <param>
-      <key>_coordinate</key>
-      <value>(1157, 823)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -960,33 +942,6 @@
     </param>
   </block>
   <block>
-    <key>flarm_packetize</key>
-    <param>
-      <key>id</key>
-      <value>flarm_packetize_0_0_0</value>
-    </param>
-    <param>
-      <key>_enabled</key>
-      <value>True</value>
-    </param>
-    <param>
-      <key>alias</key>
-      <value></value>
-    </param>
-    <param>
-      <key>affinity</key>
-      <value></value>
-    </param>
-    <param>
-      <key>_coordinate</key>
-      <value>(1157, 936)</value>
-    </param>
-    <param>
-      <key>_rotation</key>
-      <value>0</value>
-    </param>
-  </block>
-  <block>
     <key>analog_quadrature_demod_cf</key>
     <param>
       <key>id</key>
@@ -1089,33 +1044,6 @@
     <param>
       <key>_coordinate</key>
       <value>(989, 1049)</value>
-    </param>
-    <param>
-      <key>_rotation</key>
-      <value>0</value>
-    </param>
-  </block>
-  <block>
-    <key>flarm_packetize</key>
-    <param>
-      <key>id</key>
-      <value>flarm_packetize_0_0_0_0</value>
-    </param>
-    <param>
-      <key>_enabled</key>
-      <value>True</value>
-    </param>
-    <param>
-      <key>alias</key>
-      <value></value>
-    </param>
-    <param>
-      <key>affinity</key>
-      <value></value>
-    </param>
-    <param>
-      <key>_coordinate</key>
-      <value>(1157, 1049)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1971,62 +1899,185 @@
     </param>
   </block>
   <block>
-    <key>options</key>
+    <key>flarm_packetize</key>
     <param>
       <key>id</key>
-      <value>flarm_6chan</value>
+      <value>flarm_packetize_0_2</value>
     </param>
     <param>
       <key>_enabled</key>
       <value>True</value>
     </param>
     <param>
-      <key>title</key>
-      <value></value>
-    </param>
-    <param>
-      <key>author</key>
-      <value></value>
-    </param>
-    <param>
-      <key>description</key>
-      <value></value>
-    </param>
-    <param>
-      <key>window_size</key>
-      <value>1280, 1600</value>
-    </param>
-    <param>
-      <key>generate_options</key>
-      <value>wx_gui</value>
-    </param>
-    <param>
-      <key>category</key>
-      <value>Custom</value>
-    </param>
-    <param>
-      <key>run_options</key>
-      <value>prompt</value>
-    </param>
-    <param>
-      <key>run</key>
-      <value>True</value>
-    </param>
-    <param>
-      <key>max_nouts</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>realtime_scheduling</key>
-      <value></value>
+      <key>channel</key>
+      <value>bottom_channel</value>
     </param>
     <param>
       <key>alias</key>
       <value></value>
     </param>
     <param>
+      <key>affinity</key>
+      <value></value>
+    </param>
+    <param>
       <key>_coordinate</key>
-      <value>(10, 10)</value>
+      <value>(1157, 819)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+  </block>
+  <block>
+    <key>flarm_packetize</key>
+    <param>
+      <key>id</key>
+      <value>flarm_packetize_0_0_0</value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>channel</key>
+      <value>bottom_channel + 1</value>
+    </param>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>affinity</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(1157, 932)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+  </block>
+  <block>
+    <key>flarm_packetize</key>
+    <param>
+      <key>id</key>
+      <value>flarm_packetize_0_0_0_0</value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>channel</key>
+      <value>bottom_channel + 2</value>
+    </param>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>affinity</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(1157, 1045)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+  </block>
+  <block>
+    <key>flarm_packetize</key>
+    <param>
+      <key>id</key>
+      <value>flarm_packetize_0</value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>channel</key>
+      <value>bottom_channel + 3</value>
+    </param>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>affinity</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(1157, 479)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+  </block>
+  <block>
+    <key>flarm_packetize</key>
+    <param>
+      <key>id</key>
+      <value>flarm_packetize_0_0</value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>channel</key>
+      <value>bottom_channel + 4</value>
+    </param>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>affinity</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(1157, 592)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+  </block>
+  <block>
+    <key>flarm_packetize</key>
+    <param>
+      <key>id</key>
+      <value>flarm_packetize_0_1</value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>channel</key>
+      <value>bottom_channel + 5</value>
+    </param>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>affinity</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(1157, 705)</value>
     </param>
     <param>
       <key>_rotation</key>
