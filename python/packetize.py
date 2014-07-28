@@ -20,8 +20,41 @@
 # 
 
 import numpy
+import struct
 from gnuradio import gr
 from datetime import datetime
+
+
+def xtea_decrypt(key,block,n=32,endian="!"):
+    """
+        Decrypt 64 bit data block using XTEA block cypher
+        * key = 128 bit (16 char)
+        * block = 64 bit (8 char)
+        * n = rounds (default 32)
+        * endian = byte order (see 'struct' doc - default big/network)
+
+        >>> z = 'b67c01662ff6964a'.decode('hex')
+        >>> xtea_decrypt('0123456789012345',z)
+        'ABCDEFGH'
+
+        Only need to change byte order if sending/receiving from
+        alternative endian implementation
+
+        >>> z = 'ea0c3d7c1c22557f'.decode('hex')
+        >>> xtea_decrypt('0123456789012345',z,endian="<")
+        'ABCDEFGH'
+
+    """
+    v0,v1 = struct.unpack(endian+"2L",block)
+    k = struct.unpack(endian+"4L",key)
+    delta,mask = 0x9e3779b9L,0xffffffffL
+    sum = (delta * n) & mask
+    for round in range(n):
+        v1 = (v1 - (((v0<<4 ^ v0>>5) + v0) ^ (sum + k[sum>>11 & 3]))) & mask
+        sum = (sum - delta) & mask
+        v0 = (v0 - (((v1<<4 ^ v1>>5) + v1) ^ (sum + k[sum & 3]))) & mask
+    return struct.pack(endian+"2L",v0,v1)
+
 
 class packetize(gr.basic_block):
     """
@@ -30,6 +63,9 @@ class packetize(gr.basic_block):
 
     # 0000 1100 1001 1010 1001 0011
     sync_word = numpy.array([0,1, 0,1, 0,1, 0,1, 1,0, 1,0, 0,1, 0,1, 1,0, 0,1, 0,1, 1,0, 1,0, 0,1, 1,0, 0,1, 1,0, 0,1, 0,1, 1,0, 0,1, 0,1, 1,0, 1,0],dtype=numpy.int8).tostring()
+
+    key1 = struct.pack(">4L", 0x58C1FA95, 0x26DACE48, 0xFF34088C, 0xA47564E2)
+    key2 = struct.pack(">4L", 0x211D5B80, 0x5230C9CD, 0x8BA2EF63, 0x13D7BE02)
 
     icao_table = {
         "c06edf": ("C-GPZQ", "LS4",   "84"),
@@ -66,19 +102,22 @@ class packetize(gr.basic_block):
     def process_packet(self, bits):
         bytes = numpy.packbits(bits)
         if self.crc16(bytes) == 0:
-            print "    Time: " + datetime.now().isoformat()
-            #print "   Sync: {0:02x}{1:02x}{2:02x}".format(*bytes[0:3])
+            print datetime.now().isoformat(),
+            #print "{0:02x}{1:02x}{2:02x}".format(*bytes[0:3]),
             icao = "{0:02x}{1:02x}{2:02x}".format(bytes[5], bytes[4], bytes[3])
+            print "ICAO: " + icao,
+            print "Data: {0:02x}".format(bytes[6]),
+            block = xtea_decrypt(self.key1, struct.pack("<2L", (bytes[7] << 24) | (bytes[8] << 16) | (bytes[9] << 8) | bytes[10], (bytes[11] << 24) | (bytes[12] << 16) | (bytes[13] << 8) | bytes[14]), n=6)
+            v0, v1 = struct.unpack(">2L", block)
+            print "{0:08x}{1:08x}".format(v0, v1),
+            block = xtea_decrypt(self.key2, struct.pack("<2L", (bytes[15] << 24) | (bytes[16] << 16) | (bytes[17] << 8) | bytes[18], (bytes[19] << 24) | (bytes[20] << 16) | (bytes[21] << 8) | bytes[22]), n=6)
+            v0, v1 = struct.unpack(">2L", block)
+            print "{0:08x}{1:08x}".format(v0, v1),
+            print "{0:02x}{1:02x}{2:02x}{3:02x}".format(*bytes[23:27]),
+            #print "{0:02x}{1:02x}".format(*bytes[27:29]),
             if icao in self.icao_table:
                 reg, typ, tail = self.icao_table[icao]
-                print "    ICAO: " + icao + " (Reg: " + reg + ", Type: " + typ + ", Tail: " + tail + ")"
-            else:
-                print "    ICAO: " + icao
-            print " Unknown: {0:02x}".format(bytes[6])
-            print "Cipher 1: {0:02x}{1:02x}{2:02x}{3:02x}{4:02x}{5:02x}{6:02x}{7:02x}".format(*bytes[7:15])
-            print "Cipher 2: {0:02x}{1:02x}{2:02x}{3:02x}{4:02x}{5:02x}{6:02x}{7:02x}".format(*bytes[15:23])
-            print " Unknown: {0:02x}{1:02x}{2:02x}{3:02x}".format(*bytes[23:27])
-            #print "    CRC: {0:02x}{1:02x}".format(*bytes[27:29])
+                print "(Reg: " + reg + ", Type: " + typ + ", Tail: " + tail + ")",
             print
 
     def crc16(self, message):
