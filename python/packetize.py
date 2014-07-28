@@ -103,18 +103,15 @@ class packetize(gr.basic_block):
     def process_packet(self, bits):
         bytes = numpy.packbits(bits)
         if self.crc16(bytes) == 0:
+            bytes = self.decrypt_packet(bytes)
             print datetime.now().isoformat(),
             print "Ch.{0:02}".format(self.channel),
             #print "{0:02x}{1:02x}{2:02x}".format(*bytes[0:3]),
             icao = "{0:02x}{1:02x}{2:02x}".format(bytes[5], bytes[4], bytes[3])
             print "ICAO: " + icao,
             print "Data: {0:02x}".format(bytes[6]),
-            block = xtea_decrypt(self.key1, struct.pack("<2L", (bytes[7] << 24) | (bytes[8] << 16) | (bytes[9] << 8) | bytes[10], (bytes[11] << 24) | (bytes[12] << 16) | (bytes[13] << 8) | bytes[14]), n=6)
-            v0, v1 = struct.unpack(">2L", block)
-            print "{0:08x}{1:08x}".format(v0, v1),
-            block = xtea_decrypt(self.key2, struct.pack("<2L", (bytes[15] << 24) | (bytes[16] << 16) | (bytes[17] << 8) | bytes[18], (bytes[19] << 24) | (bytes[20] << 16) | (bytes[21] << 8) | bytes[22]), n=6)
-            v0, v1 = struct.unpack(">2L", block)
-            print "{0:08x}{1:08x}".format(v0, v1),
+            print "{0:02x}{1:02x}{2:02x}{3:02x}{4:02x}{5:02x}{6:02x}{7:02x}".format(*bytes[7:15]),
+            print "{0:02x}{1:02x}{2:02x}{3:02x}{4:02x}{5:02x}{6:02x}{7:02x}".format(*bytes[15:23]),
             print "{0:02x}{1:02x}{2:02x}{3:02x}".format(*bytes[23:27]),
             #print "{0:02x}{1:02x}".format(*bytes[27:29]),
             if icao in self.icao_table:
@@ -137,6 +134,15 @@ class packetize(gr.basic_block):
                     reg ^= poly
         reg ^= 0x9335
         return reg
+
+    def decrypt_packet(self, bytes):
+        block = xtea_decrypt(self.key1, struct.pack("<2L", (bytes[7] << 24) | (bytes[8] << 16) | (bytes[9] << 8) | bytes[10], (bytes[11] << 24) | (bytes[12] << 16) | (bytes[13] << 8) | bytes[14]), n=6)
+        for i in range(8):
+            bytes[7+i] = ord(block[i])
+        block = xtea_decrypt(self.key2, struct.pack("<2L", (bytes[15] << 24) | (bytes[16] << 16) | (bytes[17] << 8) | bytes[18], (bytes[19] << 24) | (bytes[20] << 16) | (bytes[21] << 8) | bytes[22]), n=6)
+        for i in range(8):
+            bytes[15+i] = ord(block[i])
+        return bytes
 
     def general_work(self, input_items, output_items):
         # Wait until we get at least one packet worth of Manchester bits
