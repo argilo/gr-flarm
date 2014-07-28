@@ -104,12 +104,19 @@ class packetize(gr.basic_block):
         bytes = numpy.packbits(bits)
         if self.crc16(bytes) == 0:
             bytes = self.decrypt_packet(bytes)
+            icao, lat, lon, alt, vs, stealth, typ = self.extract_values(bytes[3:27])
+
             print datetime.now().isoformat(),
             print "Ch.{0:02}".format(self.channel),
             #print "{0:02x}{1:02x}{2:02x}".format(*bytes[0:3]),
-            icao = "{0:02x}{1:02x}{2:02x}".format(bytes[5], bytes[4], bytes[3])
             print "ICAO: " + icao,
-            print "Data: {0:02x}".format(bytes[6]),
+            print "Lat: " + str(lat),
+            print "Lon: " + str(lon),
+            print "Alt: " + str(alt) + "m",
+            print "VS: " + str(vs),
+            print "Stealth: " + str(stealth),
+            print "Type: " + str(typ),
+            print "Raw: {0:02x}".format(bytes[6]),
             print "{0:02x}{1:02x}{2:02x}{3:02x}{4:02x}{5:02x}{6:02x}{7:02x}".format(*bytes[7:15]),
             print "{0:02x}{1:02x}{2:02x}{3:02x}{4:02x}{5:02x}{6:02x}{7:02x}".format(*bytes[15:23]),
             print "{0:02x}{1:02x}{2:02x}{3:02x}".format(*bytes[23:27]),
@@ -137,12 +144,24 @@ class packetize(gr.basic_block):
 
     def decrypt_packet(self, bytes):
         block = xtea_decrypt(self.key1, struct.pack("<2L", (bytes[7] << 24) | (bytes[8] << 16) | (bytes[9] << 8) | bytes[10], (bytes[11] << 24) | (bytes[12] << 16) | (bytes[13] << 8) | bytes[14]), n=6)
-        for i in range(8):
-            bytes[7+i] = ord(block[i])
+        for i in range(4):
+            bytes[10-i] = ord(block[i])
+            bytes[14-i] = ord(block[i+4])
         block = xtea_decrypt(self.key2, struct.pack("<2L", (bytes[15] << 24) | (bytes[16] << 16) | (bytes[17] << 8) | bytes[18], (bytes[19] << 24) | (bytes[20] << 16) | (bytes[21] << 8) | bytes[22]), n=6)
-        for i in range(8):
-            bytes[15+i] = ord(block[i])
+        for i in range(4):
+            bytes[18-i] = ord(block[i])
+            bytes[22-i] = ord(block[i+4])
         return bytes
+
+    def extract_values(self, bytes):
+        icao = "{0:02x}{1:02x}{2:02x}".format(bytes[2], bytes[1], bytes[0])
+        lat = (bytes[5] << 8) | bytes[4]
+        lon = (bytes[7] << 8) | bytes[6]
+        alt = ((bytes[9] & 0x1f) << 8) | bytes[8]
+        vs = ((bytes[10] & 0x7f) << 3) | ((bytes[9] & 0xe0) >> 5)
+        stealth = ((bytes[11] & 0x80) == 0x80)
+        typ = ((bytes[11] & 0x3C) >> 2)
+        return icao, lat, lon, alt, vs, stealth, typ
 
     def general_work(self, input_items, output_items):
         # Wait until we get at least one packet worth of Manchester bits
