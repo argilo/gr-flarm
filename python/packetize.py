@@ -159,6 +159,11 @@ class packetize(gr.basic_block):
         lon = (bytes[7] << 8) | bytes[6]
         alt = ((bytes[9] & 0x1f) << 8) | bytes[8]
         vs = ((bytes[10] & 0x7f) << 3) | ((bytes[9] & 0xe0) >> 5)
+        vsmult = ((bytes[21] & 0xc0) >> 6)
+        if vs < 0x200:
+            vs = (vs << vsmult)
+        else:
+            vs -= 0x400
         stealth = ((bytes[11] & 0x80) == 0x80)
         typ = ((bytes[11] & 0x3C) >> 2)
         return icao, lat, lon, alt, vs, stealth, typ
