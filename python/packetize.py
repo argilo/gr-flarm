@@ -104,7 +104,7 @@ class packetize(gr.basic_block):
         bytes = numpy.packbits(bits)
         if self.crc16(bytes) == 0:
             bytes = self.decrypt_packet(bytes)
-            icao, lat, lon, alt, vs, stealth, typ = self.extract_values(bytes[3:27])
+            icao, lat, lon, alt, vs, stealth, typ, ns, ew = self.extract_values(bytes[3:27])
 
             print datetime.now().isoformat(),
             print "Ch.{0:02}".format(self.channel),
@@ -116,6 +116,8 @@ class packetize(gr.basic_block):
             print "VS: " + str(vs),
             print "Stealth: " + str(stealth),
             print "Type: " + str(typ),
+            print "North/South speeds: {0},{1},{2},{3}".format(*ns),
+            print "East/West speeds: {0},{1},{2},{3}".format(*ew),
             print "Raw: {0:02x}".format(bytes[6]),
             print "{0:02x}{1:02x}{2:02x}{3:02x}{4:02x}{5:02x}{6:02x}{7:02x}".format(*bytes[7:15]),
             print "{0:02x}{1:02x}{2:02x}{3:02x}{4:02x}{5:02x}{6:02x}{7:02x}".format(*bytes[15:23]),
@@ -166,7 +168,9 @@ class packetize(gr.basic_block):
             vs -= 0x400
         stealth = ((bytes[11] & 0x80) == 0x80)
         typ = ((bytes[11] & 0x3C) >> 2)
-        return icao, lat, lon, alt, vs, stealth, typ
+        ns = [b if b < 0x80 else (b - 0x100) for b in bytes[12:16]]
+        ew = [b if b < 0x80 else (b - 0x100) for b in bytes[16:20]]
+        return icao, lat, lon, alt, vs, stealth, typ, ns, ew
 
     def general_work(self, input_items, output_items):
         # Wait until we get at least one packet worth of Manchester bits
