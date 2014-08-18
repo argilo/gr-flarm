@@ -106,6 +106,12 @@ class packetize(gr.basic_block):
             bytes = self.decrypt_packet(bytes)
             icao, lat, lon, alt, vs, stealth, typ, ns, ew = self.extract_values(bytes[3:27])
 
+            ref_lat = 454516600
+            ref_lon = -758174000
+
+            lat = self.recover_lat(ref_lat, lat)
+            lon = self.recover_lon(lat, ref_lon, lon)
+
             print datetime.now().isoformat(),
             print "Ch.{0:02}".format(self.channel),
             #print "{0:02x}{1:02x}{2:02x}".format(*bytes[0:3]),
@@ -171,6 +177,21 @@ class packetize(gr.basic_block):
         ns = [b if b < 0x80 else (b - 0x100) for b in bytes[12:16]]
         ew = [b if b < 0x80 else (b - 0x100) for b in bytes[16:20]]
         return icao, lat, lon, alt, vs, stealth, typ, ns, ew
+
+    def recover_lat(self, ref_lat, recv_lat):
+        round_lat = ref_lat >> 7
+        lat = (recv_lat - round_lat) % 0x10000
+        if lat >= 0x8000: lat -= 0x10000
+        lat = ((lat + round_lat) << 7) + 0x40
+        return lat
+
+    def recover_lon(self, ref_lat, ref_lon, recv_lon):
+        shift = 8 if ref_lat >= 450000000 else 7
+        round_lon = ref_lon >> shift
+        lon = (recv_lon - round_lon) % 0x10000
+        if lon >= 0x8000: lon -= 0x10000
+        lon = ((lon + round_lon) << shift) + (1 << (shift-1))
+        return lon
 
     def general_work(self, input_items, output_items):
         # Wait until we get at least one packet worth of Manchester bits
