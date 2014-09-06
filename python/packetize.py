@@ -88,9 +88,7 @@ class packetize(gr.basic_block):
         self.rxid = rxid
         self.channel = channel
         self.reflat = int(reflat * 1e7)
-        print "reflat=" + str(self.reflat)
         self.reflon = int(reflon * 1e7)
-        print "reflon=" + str(self.reflon)
 
     def forecast(self, noutput_items, ninput_items_required):
         ninput_items_required[0] = 5000
