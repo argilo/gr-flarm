@@ -80,20 +80,21 @@ class packetize(gr.basic_block):
         "c06b5f": ("C-GORE", "PIK20", "GP")
     }
 
-    def __init__(self, rxid, channel, reflat, reflon):
+    def __init__(self, num_channels, first_channel, rxid, reflat, reflon):
         gr.basic_block.__init__(self,
             name="packetize",
-            in_sig=[numpy.int8],
+            in_sig=[numpy.int8]*num_channels,
             out_sig=[])
+        self.first_channel = first_channel
         self.rxid = rxid
-        self.channel = channel
         self.reflat = int(reflat * 1e7)
         self.reflon = int(reflon * 1e7)
 
     def forecast(self, noutput_items, ninput_items_required):
-        ninput_items_required[0] = 5000
+        for channel in range(len(ninput_items_required)):
+            ninput_items_required[channel] = 5000
 
-    def manchester_demod_packet(self, man_bits):
+    def manchester_demod_packet(self, channel, man_bits):
         for x in range(0, len(man_bits), 2):
             if man_bits[x] == man_bits[x+1]:
                 # Manchester error. Discard packet.
@@ -101,9 +102,9 @@ class packetize(gr.basic_block):
         else:
             # We've got a valid packet! Throw out the preamble and SFD
             # and extract the bits from the Manchester encoding.
-            self.process_packet(man_bits[0::2])
+            self.process_packet(channel, man_bits[0::2])
 
-    def process_packet(self, bits):
+    def process_packet(self, channel, bits):
         bytes = numpy.packbits(bits)
         if self.crc16(bytes) == 0:
             bytes = self.decrypt_packet(bytes)
@@ -113,7 +114,7 @@ class packetize(gr.basic_block):
             lon = self.recover_lon(lat, lon)
 
             print datetime.now().isoformat(),
-            print "Ch.{0:02}".format(self.channel),
+            print "Ch.{0:02}".format(channel),
             #print "{0:02x}{1:02x}{2:02x}".format(*bytes[0:3]),
             print "ICAO: " + icao,
             print "Lat: " + str(lat),
@@ -196,13 +197,13 @@ class packetize(gr.basic_block):
     def general_work(self, input_items, output_items):
         # Wait until we get at least one packet worth of Manchester bits
         if len(input_items[0]) < 464:
-            self.consume(0, 0)
             return 0
 
-        index = input_items[0].tostring().find(self.sync_word, 0, -464+48)
-        while index != -1:
-            self.manchester_demod_packet(input_items[0][index:index+464])
-            index = input_items[0].tostring().find(self.sync_word, index+464, -464+48)
+        for channel in range(len(input_items)):
+            index = input_items[channel].tostring().find(self.sync_word, 0, -464+48)
+            while index != -1:
+                self.manchester_demod_packet(channel + self.first_channel, input_items[channel][index:index+464])
+                index = input_items[channel].tostring().find(self.sync_word, index+464, -464+48)
+            self.consume(channel, len(input_items[channel])-463)
 
-        self.consume(0, len(input_items[0])-463)
         return 0
