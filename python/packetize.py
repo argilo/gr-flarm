@@ -80,12 +80,17 @@ class packetize(gr.basic_block):
         "c06b5f": ("C-GORE", "PIK20", "GP")
     }
 
-    def __init__(self, channel):
+    def __init__(self, rxid, channel, reflat, reflon):
         gr.basic_block.__init__(self,
             name="packetize",
             in_sig=[numpy.int8],
             out_sig=[])
+        self.rxid = rxid
         self.channel = channel
+        self.reflat = int(reflat * 1e7)
+        print "reflat=" + str(self.reflat)
+        self.reflon = int(reflon * 1e7)
+        print "reflon=" + str(self.reflon)
 
     def forecast(self, noutput_items, ninput_items_required):
         ninput_items_required[0] = 5000
@@ -106,11 +111,8 @@ class packetize(gr.basic_block):
             bytes = self.decrypt_packet(bytes)
             icao, lat, lon, alt, vs, stealth, typ, ns, ew = self.extract_values(bytes[3:27])
 
-            ref_lat = 454516600
-            ref_lon = -758174000
-
-            lat = self.recover_lat(ref_lat, lat)
-            lon = self.recover_lon(lat, ref_lon, lon)
+            lat = self.recover_lat(lat)
+            lon = self.recover_lon(lat, lon)
 
             print datetime.now().isoformat(),
             print "Ch.{0:02}".format(self.channel),
@@ -178,16 +180,16 @@ class packetize(gr.basic_block):
         ew = [b if b < 0x80 else (b - 0x100) for b in bytes[16:20]]
         return icao, lat, lon, alt, vs, stealth, typ, ns, ew
 
-    def recover_lat(self, ref_lat, recv_lat):
-        round_lat = ref_lat >> 7
+    def recover_lat(self, recv_lat):
+        round_lat = self.reflat >> 7
         lat = (recv_lat - round_lat) % 0x10000
         if lat >= 0x8000: lat -= 0x10000
         lat = ((lat + round_lat) << 7) + 0x40
         return lat
 
-    def recover_lon(self, ref_lat, ref_lon, recv_lon):
-        shift = 8 if ref_lat >= 450000000 else 7
-        round_lon = ref_lon >> shift
+    def recover_lon(self, lat, recv_lon):
+        shift = 8 if lat >= 450000000 else 7
+        round_lon = self.reflon >> shift
         lon = (recv_lon - round_lon) % 0x10000
         if lon >= 0x8000: lon -= 0x10000
         lon = ((lon + round_lon) << shift) + (1 << (shift-1))

@@ -4,7 +4,14 @@
   <key>flarm_packetize</key>
   <category>FLARM</category>
   <import>import flarm</import>
-  <make>flarm.packetize($channel)</make>
+  <make>flarm.packetize($rxid, $channel, $reflat, $reflon)</make>
+
+  <param>
+    <name>Receiver ID</name>
+    <key>rxid</key>
+    <value>00</value>
+    <type>string</type>
+  </param>
 
   <param>
     <name>Channel</name>
@@ -12,8 +19,24 @@
     <value>32</value>
     <type>int</type>
   </param>
-  <check>$channel &gt;= 0</check>
-  <check>$channel &lt;= 64</check>
+
+  <param>
+    <name>Reference Latitude</name>
+    <key>reflat</key>
+    <value>45.10513</value>
+    <type>float</type>
+  </param>
+
+  <param>
+    <name>Reference Longitude</name>
+    <key>reflon</key>
+    <value>-75.623744</value>
+    <type>float</type>
+  </param>
+
+  <check>0 &lt;= $channel &lt;= 64</check>
+  <check>-90 &lt;= $reflat &lt;= 90</check>
+  <check>-180 &lt;= $reflon &lt;= 180</check>
 
   <sink>
     <name>in</name>
