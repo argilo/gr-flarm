@@ -84,7 +84,7 @@ class packetize(gr.basic_block):
         gr.basic_block.__init__(self,
             name="packetize",
             in_sig=[numpy.int8]*num_channels,
-            out_sig=[])
+            out_sig=[numpy.int8])
         self.first_channel = first_channel
         self.rxid = rxid
         self.reflat = int(reflat * 1e7)
@@ -98,15 +98,16 @@ class packetize(gr.basic_block):
         for x in range(0, len(man_bits), 2):
             if man_bits[x] == man_bits[x+1]:
                 # Manchester error. Discard packet.
-                break
+                return ""
         else:
             # We've got a valid packet! Throw out the preamble and SFD
             # and extract the bits from the Manchester encoding.
-            self.process_packet(channel, man_bits[0::2])
+            return self.process_packet(channel, man_bits[0::2])
 
     def process_packet(self, channel, bits):
         bytes = numpy.packbits(bits)
         if self.crc16(bytes) == 0:
+            raw_hex = "".join(["{0:02x}".format(byte) for byte in bytes])
             bytes = self.decrypt_packet(bytes)
             icao, lat, lon, alt, vs, stealth, typ, ns, ew = self.extract_values(bytes[3:27])
 
@@ -134,6 +135,9 @@ class packetize(gr.basic_block):
                 reg, typ, tail = self.icao_table[icao]
                 print "(Reg: " + reg + ", Type: " + typ + ", Tail: " + tail + ")",
             print
+
+            packet_data = ["$FLM", datetime.now().isoformat(), self.rxid, str(channel), icao, str(lat), str(lon), str(alt), raw_hex]
+            return ",".join(packet_data) + "\r\n"
 
     def crc16(self, message):
         poly = 0x1021
@@ -199,11 +203,14 @@ class packetize(gr.basic_block):
         if len(input_items[0]) < 464:
             return 0
 
+        output = ""
         for channel in range(len(input_items)):
             index = input_items[channel].tostring().find(self.sync_word, 0, -464+48)
             while index != -1:
-                self.manchester_demod_packet(channel + self.first_channel, input_items[channel][index:index+464])
+                output = output + self.manchester_demod_packet(channel + self.first_channel, input_items[channel][index:index+464])
                 index = input_items[channel].tostring().find(self.sync_word, index+464, -464+48)
             self.consume(channel, len(input_items[channel])-463)
 
-        return 0
+        output = numpy.array([ord(c) for c in output], dtype=numpy.int8)
+        output_items[0][0:len(output)] = output
+        return len(output)

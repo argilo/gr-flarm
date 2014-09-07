@@ -52,4 +52,9 @@
     <type>byte</type>
     <nports>$num_channels</nports>
   </sink>
+
+  <source>
+    <name>out</name>
+    <type>byte</type>
+  </source>
 </block>
