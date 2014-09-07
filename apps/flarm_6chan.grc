@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ASCII'?>
 <?grc format='1' created='3.7.6'?>
 <flow_graph>
-  <timestamp>Sat Sep  6 21:07:35 2014</timestamp>
+  <timestamp>Sat Sep  6 21:33:49 2014</timestamp>
   <block>
     <key>variable</key>
     <param>
@@ -1975,6 +1975,53 @@
     </param>
   </block>
   <block>
+    <key>blocks_file_sink</key>
+    <param>
+      <key>id</key>
+      <value>blocks_file_sink_0</value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>file</key>
+      <value>flarm-packets.txt</value>
+    </param>
+    <param>
+      <key>type</key>
+      <value>byte</value>
+    </param>
+    <param>
+      <key>vlen</key>
+      <value>1</value>
+    </param>
+    <param>
+      <key>unbuffered</key>
+      <value>False</value>
+    </param>
+    <param>
+      <key>append</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>affinity</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(1244, 1017)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>180</value>
+    </param>
+  </block>
+  <block>
     <key>flarm_packetize</key>
     <param>
       <key>id</key>
@@ -2030,34 +2077,34 @@
     </param>
   </block>
   <block>
-    <key>blocks_file_sink</key>
+    <key>blks2_tcp_sink</key>
     <param>
       <key>id</key>
-      <value>blocks_file_sink_0</value>
+      <value>blks2_tcp_sink_0</value>
     </param>
     <param>
       <key>_enabled</key>
-      <value>True</value>
-    </param>
-    <param>
-      <key>file</key>
-      <value>flarm-packets.txt</value>
+      <value>False</value>
     </param>
     <param>
       <key>type</key>
       <value>byte</value>
     </param>
     <param>
-      <key>vlen</key>
-      <value>1</value>
+      <key>addr</key>
+      <value>127.0.0.1</value>
     </param>
     <param>
-      <key>unbuffered</key>
+      <key>port</key>
+      <value>12345</value>
+    </param>
+    <param>
+      <key>server</key>
       <value>False</value>
     </param>
     <param>
-      <key>append</key>
-      <value>True</value>
+      <key>vlen</key>
+      <value>1</value>
     </param>
     <param>
       <key>alias</key>
@@ -2069,7 +2116,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(1244, 1017)</value>
+      <value>(1249, 930)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -2295,6 +2342,12 @@
   <connection>
     <source_block_id>flarm_packetize_0</source_block_id>
     <sink_block_id>blocks_file_sink_0</sink_block_id>
+    <source_key>0</source_key>
+    <sink_key>0</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>flarm_packetize_0</source_block_id>
+    <sink_block_id>blks2_tcp_sink_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>0</sink_key>
   </connection>
