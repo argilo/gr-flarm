@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ASCII'?>
 <?grc format='1' created='3.7.6'?>
 <flow_graph>
-  <timestamp>Sun Sep  7 12:23:55 2014</timestamp>
+  <timestamp>Sun Sep 21 10:33:11 2014</timestamp>
   <block>
     <key>options</key>
     <param>
@@ -69,7 +69,7 @@
     <key>variable</key>
     <param>
       <key>id</key>
-      <value>center_freq</value>
+      <value>bottom_channel</value>
     </param>
     <param>
       <key>_enabled</key>
@@ -77,7 +77,7 @@
     </param>
     <param>
       <key>value</key>
-      <value>902000000 + (channel_rate * (bottom_channel + (channels / 2)))</value>
+      <value>24</value>
     </param>
     <param>
       <key>alias</key>
@@ -85,61 +85,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(10, 242)</value>
-    </param>
-    <param>
-      <key>_rotation</key>
-      <value>0</value>
-    </param>
-  </block>
-  <block>
-    <key>variable</key>
-    <param>
-      <key>id</key>
-      <value>channel_rate</value>
-    </param>
-    <param>
-      <key>_enabled</key>
-      <value>True</value>
-    </param>
-    <param>
-      <key>value</key>
-      <value>400000</value>
-    </param>
-    <param>
-      <key>alias</key>
-      <value></value>
-    </param>
-    <param>
-      <key>_coordinate</key>
-      <value>(11, 101)</value>
-    </param>
-    <param>
-      <key>_rotation</key>
-      <value>0</value>
-    </param>
-  </block>
-  <block>
-    <key>variable</key>
-    <param>
-      <key>id</key>
-      <value>samp_rate</value>
-    </param>
-    <param>
-      <key>_enabled</key>
-      <value>True</value>
-    </param>
-    <param>
-      <key>value</key>
-      <value>channel_rate * channels</value>
-    </param>
-    <param>
-      <key>alias</key>
-      <value></value>
-    </param>
-    <param>
-      <key>_coordinate</key>
-      <value>(10, 170)</value>
+      <value>(10, 312)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -177,7 +123,7 @@
     <key>variable</key>
     <param>
       <key>id</key>
-      <value>bottom_channel</value>
+      <value>samp_rate</value>
     </param>
     <param>
       <key>_enabled</key>
@@ -185,7 +131,7 @@
     </param>
     <param>
       <key>value</key>
-      <value>24</value>
+      <value>channel_rate * channels</value>
     </param>
     <param>
       <key>alias</key>
@@ -193,7 +139,61 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(10, 312)</value>
+      <value>(10, 170)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+  </block>
+  <block>
+    <key>variable</key>
+    <param>
+      <key>id</key>
+      <value>channel_rate</value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>value</key>
+      <value>400000</value>
+    </param>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(11, 101)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+  </block>
+  <block>
+    <key>variable</key>
+    <param>
+      <key>id</key>
+      <value>center_freq</value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>value</key>
+      <value>902000000 + (channel_rate * (bottom_channel + (channels / 2)))</value>
+    </param>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(10, 242)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -475,65 +475,6 @@
     <param>
       <key>_coordinate</key>
       <value>(12, 624)</value>
-    </param>
-    <param>
-      <key>_rotation</key>
-      <value>0</value>
-    </param>
-  </block>
-  <block>
-    <key>pfb_channelizer_ccf</key>
-    <param>
-      <key>id</key>
-      <value>pfb_channelizer_ccf_0</value>
-    </param>
-    <param>
-      <key>_enabled</key>
-      <value>True</value>
-    </param>
-    <param>
-      <key>nchans</key>
-      <value>channels</value>
-    </param>
-    <param>
-      <key>taps</key>
-      <value>firdes.low_pass(1, samp_rate, 175000, 50000, firdes.WIN_HAMMING, 6.76)</value>
-    </param>
-    <param>
-      <key>osr</key>
-      <value>1.0</value>
-    </param>
-    <param>
-      <key>atten</key>
-      <value>100</value>
-    </param>
-    <param>
-      <key>ch_map</key>
-      <value>[]</value>
-    </param>
-    <param>
-      <key>bus_conns</key>
-      <value>[[0,],]</value>
-    </param>
-    <param>
-      <key>alias</key>
-      <value></value>
-    </param>
-    <param>
-      <key>affinity</key>
-      <value></value>
-    </param>
-    <param>
-      <key>minoutbuf</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>maxoutbuf</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>_coordinate</key>
-      <value>(212, 301)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1637,6 +1578,65 @@
     <param>
       <key>_coordinate</key>
       <value>(13, 942)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+  </block>
+  <block>
+    <key>pfb_channelizer_ccf</key>
+    <param>
+      <key>id</key>
+      <value>pfb_channelizer_ccf_0</value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>nchans</key>
+      <value>channels</value>
+    </param>
+    <param>
+      <key>taps</key>
+      <value>firdes.gaussian(1, 4 * samp_rate / channel_rate, 0.5, 8 * samp_rate / channel_rate)</value>
+    </param>
+    <param>
+      <key>osr</key>
+      <value>1.0</value>
+    </param>
+    <param>
+      <key>atten</key>
+      <value>100</value>
+    </param>
+    <param>
+      <key>ch_map</key>
+      <value>[]</value>
+    </param>
+    <param>
+      <key>bus_conns</key>
+      <value>[[0,],]</value>
+    </param>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>affinity</key>
+      <value></value>
+    </param>
+    <param>
+      <key>minoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>maxoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(212, 301)</value>
     </param>
     <param>
       <key>_rotation</key>
