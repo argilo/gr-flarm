@@ -106,7 +106,11 @@ class packetize(gr.basic_block):
 
     def process_packet(self, channel, bits):
         bytes = numpy.packbits(bits)
-        if self.crc16(bytes) == 0:
+        if self.crc16(bytes) != 0:
+            # Invalid CRC
+            print "Invalid CRC!"
+            return ""
+        else:
             raw_hex = "".join(["{0:02x}".format(byte) for byte in bytes])
             bytes = self.decrypt_packet(bytes)
             icao, lat, lon, alt, vs, stealth, typ, ns, ew = self.extract_values(bytes[3:27])
