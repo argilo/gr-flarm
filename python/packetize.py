@@ -1,23 +1,23 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# 
+#
 # Copyright 2014 Clayton Smith.
-# 
+#
 # This is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 3, or (at your option)
 # any later version.
-# 
+#
 # This software is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this software; see the file COPYING.  If not, write to
 # the Free Software Foundation, Inc., 51 Franklin Street,
 # Boston, MA 02110-1301, USA.
-# 
+#
 
 import numpy
 import struct
@@ -77,7 +77,10 @@ class packetize(gr.basic_block):
         "c05fdd": ("C-GKHU", "ASW24", "M7"),
         "c06208": ("C-GLDF", "LAK12", "Z7"),
         "c007be": ("C-FCYF", "SZD55", "AT"),
-        "c06b5f": ("C-GORE", "PIK20", "GP")
+        "c06b5f": ("C-GORE", "PIK20", "GP"),
+        "dd8223": ("PH-1431", "DG1000", "GO1"),
+        "dd8202": ("PH-1432", "DG1000", "GO2"),
+        "dddefb": ("PH-1489", "DUOD", "GO3")
     }
 
     def __init__(self, num_channels, first_channel, rxid, reflat, reflon):
