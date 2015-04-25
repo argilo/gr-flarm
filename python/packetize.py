@@ -61,8 +61,8 @@ class packetize(gr.basic_block):
     docstring for block packetize
     """
 
-    # 0000 1100 1001 1010 1001 0011
-    sync_word = numpy.array([0,1, 0,1, 0,1, 0,1, 1,0, 1,0, 0,1, 0,1, 1,0, 0,1, 0,1, 1,0, 1,0, 0,1, 1,0, 0,1, 1,0, 0,1, 0,1, 1,0, 0,1, 0,1, 1,0, 1,0],dtype=numpy.int8).tostring()
+    # 0011 0001 1111 1010 1011 0110
+    sync_word = numpy.array([0,1, 0,1, 1,0, 1,0, 0,1, 0,1, 0,1, 1,0, 1,0, 1,0, 1,0, 1,0, 1,0, 0,1, 1,0, 0,1, 1,0, 0,1, 1,0, 1,0, 0,1, 1,0, 1,0, 0,1],dtype=numpy.int8).tostring()
 
     key1 = struct.pack(">4L", 0x58C1FA95, 0x26DACE48, 0xFF34088C, 0xA47564E2)
     key2 = struct.pack(">4L", 0x211D5B80, 0x5230C9CD, 0x8BA2EF63, 0x13D7BE02)
