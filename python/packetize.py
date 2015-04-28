@@ -23,37 +23,62 @@ import numpy
 import struct
 from gnuradio import gr
 from datetime import datetime
+import time
 
 
-def xtea_decrypt(key,block,n=32,endian="!"):
-    """
-        Decrypt 64 bit data block using XTEA block cypher
-        * key = 128 bit (16 char)
-        * block = 64 bit (8 char)
-        * n = rounds (default 32)
-        * endian = byte order (see 'struct' doc - default big/network)
+def u32(x):
+    return x & 0xffffffff
 
-        >>> z = 'b67c01662ff6964a'.decode('hex')
-        >>> xtea_decrypt('0123456789012345',z)
-        'ABCDEFGH'
+def obscure_key(key, seed):
+    m1 = u32(seed * (key ^ (key >> 16)))
+    m2 = u32(seed * (m1 ^ (m1 >> 16)))
+    return m2 ^ (m2 >> 16)
 
-        Only need to change byte order if sending/receiving from
-        alternative endian implementation
+def make_key(time, address):
+    if (time >> 27) & 4 == 0:
+        table = [ 0xe43276df, 0xdca83759, 0x9802b8ac, 0x4675a56b ]
+    else:
+        table = [ 0xfc78ea65, 0x804b90ea, 0xb76542cd, 0x329dfa32 ]
+    return [obscure_key(word ^ ((time>>6) ^ address), 0x045D9F3B) ^ 0x87B562F4 for word in table]
 
-        >>> z = 'ea0c3d7c1c22557f'.decode('hex')
-        >>> xtea_decrypt('0123456789012345',z,endian="<")
-        'ABCDEFGH'
+def raw_xxtea(v, n, k):
+    def MX():
+        return ((z>>5)^(y<<2)) + ((y>>3)^(z<<4))^(sum^y) + (k[(p & 3)^e]^z)
 
-    """
-    v0,v1 = struct.unpack(endian+"2L",block)
-    k = struct.unpack(endian+"4L",key)
-    delta,mask = 0x9e3779b9L,0xffffffffL
-    sum = (delta * n) & mask
-    for round in range(n):
-        v1 = (v1 - (((v0<<4 ^ v0>>5) + v0) ^ (sum + k[sum>>11 & 3]))) & mask
-        sum = (sum - delta) & mask
-        v0 = (v0 - (((v1<<4 ^ v1>>5) + v1) ^ (sum + k[sum & 3]))) & mask
-    return struct.pack(endian+"2L",v0,v1)
+    y = v[0]
+    sum = 0
+    DELTA = 0x9e3779b9
+    if n > 1:       # Encoding
+        z = v[n-1]
+        q = 6 # + 52 / n
+        while q > 0:
+            q -= 1
+            sum = u32(sum + DELTA)
+            e = u32(sum >> 2) & 3
+            p = 0
+            while p < n - 1:
+                y = v[p+1]
+                z = v[p] = u32(v[p] + MX())
+                p += 1
+            y = v[0]
+            z = v[n-1] = u32(v[n-1] + MX())
+        return 0
+    elif n < -1:    # Decoding
+        n = -n
+        q = 6 # + 52 / n
+        sum = u32(q * DELTA)
+        while sum != 0:
+            e = u32(sum >> 2) & 3
+            p = n - 1
+            while p > 0:
+                z = v[p-1]
+                y = v[p] = u32(v[p] - MX())
+                p -= 1
+            z = v[n-1]
+            y = v[0] = u32(v[0] - MX())
+            sum = u32(sum - DELTA)
+        return 0
+    return 1
 
 
 class packetize(gr.basic_block):
@@ -61,11 +86,8 @@ class packetize(gr.basic_block):
     docstring for block packetize
     """
 
-    # 0000 1100 1001 1010 1001 0011
-    sync_word = numpy.array([0,1, 0,1, 0,1, 0,1, 1,0, 1,0, 0,1, 0,1, 1,0, 0,1, 0,1, 1,0, 1,0, 0,1, 1,0, 0,1, 1,0, 0,1, 0,1, 1,0, 0,1, 0,1, 1,0, 1,0],dtype=numpy.int8).tostring()
-
-    key1 = struct.pack(">4L", 0x58C1FA95, 0x26DACE48, 0xFF34088C, 0xA47564E2)
-    key2 = struct.pack(">4L", 0x211D5B80, 0x5230C9CD, 0x8BA2EF63, 0x13D7BE02)
+    # 0011 0001 1111 1010 1011 0110
+    sync_word = numpy.array([0,1, 0,1, 1,0, 1,0, 0,1, 0,1, 0,1, 1,0, 1,0, 1,0, 1,0, 1,0, 1,0, 0,1, 1,0, 0,1, 1,0, 0,1, 1,0, 1,0, 0,1, 1,0, 1,0, 0,1],dtype=numpy.int8).tostring()
 
     icao_table = {
         "c06edf": ("C-GPZQ", "LS4",   "84"),
@@ -108,20 +130,21 @@ class packetize(gr.basic_block):
             return self.process_packet(channel, man_bits[0::2])
 
     def process_packet(self, channel, bits):
-        bytes = numpy.packbits(bits)
-        if self.crc16(bytes) != 0:
+        in_bytes = numpy.packbits(bits)
+        if self.crc16(in_bytes) != 0:
             # Invalid CRC
             print "Invalid CRC!"
             return ""
         else:
-            raw_hex = "".join(["{0:02x}".format(byte) for byte in bytes])
-            bytes = self.decrypt_packet(bytes)
-            icao, lat, lon, alt, vs, stealth, typ, ns, ew = self.extract_values(bytes[3:27])
+            raw_hex = "".join(["{0:02x}".format(byte) for byte in in_bytes])
+            key = make_key(int(time.time()), (in_bytes[4] << 16) | (in_bytes[3] << 8))
+            bytes = self.decrypt_packet(in_bytes, key)
+            icao, lat, lon, alt, vs, stealth, typ, ns, ew, status = self.extract_values(bytes[3:27])
 
             lat = self.recover_lat(lat)
             lon = self.recover_lon(lat, lon)
 
-            print datetime.now().isoformat(),
+            print datetime.utcnow().isoformat() + 'Z',
             print "Ch.{0:02}".format(channel),
             #print "{0:02x}{1:02x}{2:02x}".format(*bytes[0:3]),
             print "ICAO: " + icao,
@@ -131,19 +154,19 @@ class packetize(gr.basic_block):
             print "VS: " + str(vs),
             print "Stealth: " + str(stealth),
             print "Type: " + str(typ),
+            print "GPS status: " + str(status),
             print "North/South speeds: {0},{1},{2},{3}".format(*ns),
             print "East/West speeds: {0},{1},{2},{3}".format(*ew),
             print "Raw: {0:02x}".format(bytes[6]),
             print "{0:02x}{1:02x}{2:02x}{3:02x}{4:02x}{5:02x}{6:02x}{7:02x}".format(*bytes[7:15]),
             print "{0:02x}{1:02x}{2:02x}{3:02x}{4:02x}{5:02x}{6:02x}{7:02x}".format(*bytes[15:23]),
             print "{0:02x}{1:02x}{2:02x}{3:02x}".format(*bytes[23:27]),
-            #print "{0:02x}{1:02x}".format(*bytes[27:29]),
             if icao in self.icao_table:
                 reg, typ, tail = self.icao_table[icao]
                 print "(Reg: " + reg + ", Type: " + typ + ", Tail: " + tail + ")",
             print
 
-            packet_data = ["$FLM", datetime.now().isoformat(), self.rxid, str(channel), icao, str(lat), str(lon), str(alt), raw_hex]
+            packet_data = ["$FLM", datetime.utcnow().isoformat() + 'Z', self.rxid, str(channel), icao, str(lat), str(lon), str(alt), raw_hex]
             return ",".join(packet_data) + "\r\n"
 
     def crc16(self, message):
@@ -162,33 +185,36 @@ class packetize(gr.basic_block):
         reg ^= 0x9335
         return reg
 
-    def decrypt_packet(self, bytes):
-        block = xtea_decrypt(self.key1, struct.pack("<2L", (bytes[7] << 24) | (bytes[8] << 16) | (bytes[9] << 8) | bytes[10], (bytes[11] << 24) | (bytes[12] << 16) | (bytes[13] << 8) | bytes[14]), n=6)
-        for i in range(4):
-            bytes[10-i] = ord(block[i])
-            bytes[14-i] = ord(block[i+4])
-        block = xtea_decrypt(self.key2, struct.pack("<2L", (bytes[15] << 24) | (bytes[16] << 16) | (bytes[17] << 8) | bytes[18], (bytes[19] << 24) | (bytes[20] << 16) | (bytes[21] << 8) | bytes[22]), n=6)
-        for i in range(4):
-            bytes[18-i] = ord(block[i])
-            bytes[22-i] = ord(block[i+4])
-        return bytes
+    def decrypt_packet(self, bytes, key):
+        v = []
+        result = bytes[:]
+        for x in range(5):
+            v.append((bytes[4*x+10] << 24) | (bytes[4*x+9] << 16) | (bytes[4*x+8] << 8) | bytes[4*x+7])
+        raw_xxtea(v, -5, key)
+        for x in range(5):
+            result[4*x+10]  =  v[x] >> 24
+            result[4*x+9]  = (v[x] >> 16) & 0xff
+            result[4*x+8]  = (v[x] >> 8) & 0xff
+            result[4*x+7] =  v[x] & 0xff
+        return result
 
     def extract_values(self, bytes):
         icao = "{0:02x}{1:02x}{2:02x}".format(bytes[2], bytes[1], bytes[0])
-        lat = (bytes[5] << 8) | bytes[4]
-        lon = (bytes[7] << 8) | bytes[6]
-        alt = ((bytes[9] & 0x1f) << 8) | bytes[8]
-        vs = ((bytes[10] & 0x7f) << 3) | ((bytes[9] & 0xe0) >> 5)
-        vsmult = ((bytes[21] & 0xc0) >> 6)
+        vs = ((bytes[5] & 0b00000011) << 8) | bytes[4]
+        status = ((bytes[7] & 0b00001111) << 8) | bytes[6]
+        typ = ((bytes[7] & 0b11110000) >> 4)
+        lat = ((bytes[10] & 0b00000111) << 16) | (bytes[9] << 8) | bytes[8]
+        lon = ((bytes[14] & 0b00001111) << 16) | (bytes[13] << 8) | bytes[12]
+        alt = (bytes[11] << 5) | ((bytes[10] & 0b11111000) >> 3)
+        vsmult = ((bytes[15] & 0b11000000) >> 6)
         if vs < 0x200:
             vs = (vs << vsmult)
         else:
             vs -= 0x400
-        stealth = ((bytes[11] & 0x80) == 0x80)
-        typ = ((bytes[11] & 0x3C) >> 2)
-        ns = [b if b < 0x80 else (b - 0x100) for b in bytes[12:16]]
-        ew = [b if b < 0x80 else (b - 0x100) for b in bytes[16:20]]
-        return icao, lat, lon, alt, vs, stealth, typ, ns, ew
+        stealth = False # Not yet sure where this is now.
+        ns = [b if b < 0x80 else (b - 0x100) for b in bytes[16:20]]
+        ew = [b if b < 0x80 else (b - 0x100) for b in bytes[20:24]]
+        return icao, lat, lon, alt, vs, stealth, typ, ns, ew, status
 
     def recover_lat(self, recv_lat):
         round_lat = self.reflat >> 7
