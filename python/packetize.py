@@ -41,6 +41,12 @@ def make_key(time, address):
         table = [ 0xfc78ea65, 0x804b90ea, 0xb76542cd, 0x329dfa32 ]
     return [obscure_key(word ^ ((time>>6) ^ address), 0x045D9F3B) ^ 0x87B562F4 for word in table]
 
+# Adapted from https://github.com/andersekbom/prycut/blob/master/pyxxtea.py
+#
+# Pure Python (2.x) implementation of the XXTEA cipher
+# (c) 2009. Ivan Voras <ivoras@gmail.com>
+# Released under the BSD License.
+#
 def raw_xxtea(v, n, k):
     def MX():
         return ((z>>5)^(y<<2)) + ((y>>3)^(z<<4))^(sum^y) + (k[(p & 3)^e]^z)
