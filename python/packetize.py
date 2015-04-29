@@ -148,7 +148,7 @@ class packetize(gr.basic_block):
             icao, lat, lon, alt, vs, stealth, typ, ns, ew, status = self.extract_values(bytes[3:27])
 
             lat = self.recover_lat(lat)
-            lon = self.recover_lon(lat, lon)
+            lon = self.recover_lon(lon)
 
             print datetime.utcnow().isoformat() + 'Z',
             print "Ch.{0:02}".format(channel),
@@ -224,17 +224,16 @@ class packetize(gr.basic_block):
 
     def recover_lat(self, recv_lat):
         round_lat = self.reflat >> 7
-        lat = (recv_lat - round_lat) % 0x10000
-        if lat >= 0x8000: lat -= 0x10000
+        lat = (recv_lat - round_lat) % 0x80000
+        if lat >= 0x40000: lat -= 0x80000
         lat = ((lat + round_lat) << 7) + 0x40
         return lat
 
-    def recover_lon(self, lat, recv_lon):
-        shift = 8 if lat >= 450000000 else 7
-        round_lon = self.reflon >> shift
-        lon = (recv_lon - round_lon) % 0x10000
-        if lon >= 0x8000: lon -= 0x10000
-        lon = ((lon + round_lon) << shift) + (1 << (shift-1))
+    def recover_lon(self, recv_lon):
+        round_lon = self.reflon >> 7
+        lon = (recv_lon - round_lon) % 0x100000
+        if lon >= 0x80000: lon -= 0x100000
+        lon = ((lon + round_lon) << 7) + 0x40
         return lon
 
     def general_work(self, input_items, output_items):
