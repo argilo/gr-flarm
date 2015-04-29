@@ -125,7 +125,7 @@ class packetize(gr.basic_block):
         for channel in range(len(ninput_items_required)):
             ninput_items_required[channel] = 5000
 
-    def manchester_demod_packet(self, channel, man_bits):
+    def manchester_demod_packet(self, channel, man_bits, time):
         for x in range(0, len(man_bits), 2):
             if man_bits[x] == man_bits[x+1]:
                 # Manchester error. Discard packet.
@@ -133,9 +133,9 @@ class packetize(gr.basic_block):
         else:
             # We've got a valid packet! Throw out the preamble and SFD
             # and extract the bits from the Manchester encoding.
-            return self.process_packet(channel, man_bits[0::2])
+            return self.process_packet(channel, man_bits[0::2], time)
 
-    def process_packet(self, channel, bits):
+    def process_packet(self, channel, bits, time):
         in_bytes = numpy.packbits(bits)
         if self.crc16(in_bytes) != 0:
             # Invalid CRC
@@ -143,14 +143,14 @@ class packetize(gr.basic_block):
             return ""
         else:
             raw_hex = "".join(["{0:02x}".format(byte) for byte in in_bytes])
-            key = make_key(int(time.time()), (in_bytes[4] << 16) | (in_bytes[3] << 8))
+            key = make_key(int(time), (in_bytes[4] << 16) | (in_bytes[3] << 8))
             bytes = self.decrypt_packet(in_bytes, key)
             icao, lat, lon, alt, vs, stealth, typ, ns, ew, status = self.extract_values(bytes[3:27])
 
             lat = self.recover_lat(lat)
             lon = self.recover_lon(lon)
 
-            print datetime.utcnow().isoformat() + 'Z',
+            print datetime.utcfromtimestamp(time).isoformat() + 'Z',
             print "Ch.{0:02}".format(channel),
             #print "{0:02x}{1:02x}{2:02x}".format(*bytes[0:3]),
             print "ICAO: " + icao,
@@ -172,7 +172,7 @@ class packetize(gr.basic_block):
                 print "(Reg: " + reg + ", Type: " + typ + ", Tail: " + tail + ")",
             print
 
-            packet_data = ["$FLM", datetime.utcnow().isoformat() + 'Z', self.rxid, str(channel), icao, str(lat), str(lon), str(alt), raw_hex]
+            packet_data = ["$FLM", datetime.utcfromtimestamp(time).isoformat() + 'Z', self.rxid, str(channel), icao, str(lat), str(lon), str(alt), raw_hex]
             return ",".join(packet_data) + "\r\n"
 
     def crc16(self, message):
@@ -245,10 +245,40 @@ class packetize(gr.basic_block):
         for channel in range(len(input_items)):
             index = input_items[channel].tostring().find(self.sync_word, 0, -464+48)
             while index != -1:
-                output = output + self.manchester_demod_packet(channel + self.first_channel, input_items[channel][index:index+464])
+                output = output + self.manchester_demod_packet(channel + self.first_channel, input_items[channel][index:index+464], time.time())
                 index = input_items[channel].tostring().find(self.sync_word, index+464, -464+48)
             self.consume(channel, len(input_items[channel])-463)
 
         output = numpy.array([ord(c) for c in output], dtype=numpy.int8)
         output_items[0][0:len(output)] = output
         return len(output)
+
+if __name__ == "__main__":
+    import sys
+    import dateutil.parser
+    import pytz
+
+    def iso_to_unix(datetime_string):
+        dt = dateutil.parser.parse(datetime_string)
+        if dt.tzinfo == None:
+            dt = pytz.timezone('US/Eastern').localize(dt)
+        epoch = datetime(1970, 1, 1, tzinfo=pytz.UTC)
+        return (dt - epoch).total_seconds()
+
+    def hex_to_bits(hex_string):
+        bytes = []
+        for x in range(0, len(hex_string), 2):
+            bytes.append(int(hex_string[x:x+2], 16))
+        bytes = numpy.array(bytes, dtype=numpy.uint8)
+        return numpy.unpackbits(bytes)
+
+    if len(sys.argv) < 2:
+        print("Usage: packetize.py <filename>")
+
+    with open(sys.argv[1]) as f:
+        p = packetize(1, 0, "00", 45.10513, -75.623744)
+        for line in f:
+            fields = line.rstrip().split(',')
+            time, bits = iso_to_unix(fields[1]), hex_to_bits(fields[8])
+            result = p.process_packet(0, bits, time)
+            print result.rstrip()
