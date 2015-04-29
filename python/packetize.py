@@ -274,6 +274,7 @@ if __name__ == "__main__":
 
     if len(sys.argv) < 2:
         print("Usage: packetize.py <filename>")
+        exit(1)
 
     with open(sys.argv[1]) as f:
         p = packetize(1, 0, "00", 45.10513, -75.623744)
