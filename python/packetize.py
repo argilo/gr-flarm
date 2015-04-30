@@ -138,7 +138,6 @@ class packetize(gr.basic_block):
     def process_packet(self, channel, bits, time):
         in_bytes = numpy.packbits(bits)
         if self.crc16(in_bytes) != 0:
-            # Invalid CRC
             print "Invalid CRC!"
             return ""
         else:
@@ -152,7 +151,6 @@ class packetize(gr.basic_block):
 
             print datetime.utcfromtimestamp(time).isoformat() + 'Z',
             print "Ch.{0:02}".format(channel),
-            #print "{0:02x}{1:02x}{2:02x}".format(*bytes[0:3]),
             print "ICAO: " + icao,
             print "Lat: " + str(lat),
             print "Lon: " + str(lon),
