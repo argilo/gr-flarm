@@ -135,43 +135,70 @@ class packetize(gr.basic_block):
             # and extract the bits from the Manchester encoding.
             return self.process_packet(channel, man_bits[0::2], time)
 
+    MAX_OFFSET = 50
+    def time_offsets(self, estimate):
+        yield estimate
+        for offset in range(1, self.MAX_OFFSET + abs(estimate) + 1):
+            if estimate + offset <= self.MAX_OFFSET: yield estimate + offset
+            if estimate - offset >= -self.MAX_OFFSET: yield estimate - offset
+
+    last_offset = 0
     def process_packet(self, channel, bits, time):
         in_bytes = numpy.packbits(bits)
         if self.crc16(in_bytes) != 0:
             print "Invalid CRC!"
             return ""
+
+        raw_hex = "".join(["{0:02x}".format(byte) for byte in in_bytes])
+        if in_bytes[6] == 0x10:
+            for offset in self.time_offsets(self.last_offset):
+                key = make_key(int(time) + offset*64, (in_bytes[4] << 16) | (in_bytes[3] << 8))
+                bytes = self.decrypt_packet(in_bytes, key)
+                icao, lat, lon, alt, vs, no_track, stealth, typ, ns, ew, status, unk = self.extract_values(bytes[3:27])
+                if unk == 0x0400:
+                    print "Time offset: " + str(offset*64),
+                    self.last_offset = offset
+
+                    lat = self.recover_lat(lat)
+                    lon = self.recover_lon(lon)
+
+                    print datetime.utcfromtimestamp(time).isoformat() + 'Z',
+                    print "Ch.{0:02}".format(channel),
+                    print "ICAO: " + icao,
+                    print "Lat: " + str(lat),
+                    print "Lon: " + str(lon),
+                    print "Alt: " + str(alt) + "m",
+                    print "VS: " + str(vs),
+                    print "No-track: " + str(no_track),
+                    print "Stealth: " + str(stealth),
+                    print "Type: " + str(typ),
+                    print "GPS status: " + str(status),
+                    print "North/South speeds: {0},{1},{2},{3}".format(*ns),
+                    print "East/West speeds: {0},{1},{2},{3}".format(*ew),
+                    print "Unknown: {0:04x}".format(unk),
+                    print "Raw: {0:02x}".format(bytes[6]),
+                    print "{0:02x}{1:02x}{2:02x}{3:02x}{4:02x}{5:02x}{6:02x}{7:02x}".format(*bytes[7:15]),
+                    print "{0:02x}{1:02x}{2:02x}{3:02x}{4:02x}{5:02x}{6:02x}{7:02x}".format(*bytes[15:23]),
+                    print "{0:02x}{1:02x}{2:02x}{3:02x}".format(*bytes[23:27]),
+                    if icao in self.icao_table:
+                        reg, typ, tail = self.icao_table[icao]
+                        print "(Reg: " + reg + ", Type: " + typ + ", Tail: " + tail + ")",
+                    print
+
+                    break
+            else:
+                print "Couldn't decrypt packet!"
+                icao, _, _, _, _, _, _, _, _, _, _, _ = self.extract_values(in_bytes[3:27])
+                lat, lon, alt = -1, -1, -1
+
         else:
-            raw_hex = "".join(["{0:02x}".format(byte) for byte in in_bytes])
-            key = make_key(int(time), (in_bytes[4] << 16) | (in_bytes[3] << 8))
-            bytes = self.decrypt_packet(in_bytes, key)
-            icao, lat, lon, alt, vs, stealth, typ, ns, ew, status = self.extract_values(bytes[3:27])
+            print "Don't know how to decrypt packet type {0:02x}".format(in_bytes[6])
+            icao, _, _, _, _, _, _, _, _, _, _, _ = self.extract_values(in_bytes[3:27])
+            lat, lon, alt = -1, -1, -1
 
-            lat = self.recover_lat(lat)
-            lon = self.recover_lon(lon)
 
-            print datetime.utcfromtimestamp(time).isoformat() + 'Z',
-            print "Ch.{0:02}".format(channel),
-            print "ICAO: " + icao,
-            print "Lat: " + str(lat),
-            print "Lon: " + str(lon),
-            print "Alt: " + str(alt) + "m",
-            print "VS: " + str(vs),
-            print "Stealth: " + str(stealth),
-            print "Type: " + str(typ),
-            print "GPS status: " + str(status),
-            print "North/South speeds: {0},{1},{2},{3}".format(*ns),
-            print "East/West speeds: {0},{1},{2},{3}".format(*ew),
-            print "Raw: {0:02x}".format(bytes[6]),
-            print "{0:02x}{1:02x}{2:02x}{3:02x}{4:02x}{5:02x}{6:02x}{7:02x}".format(*bytes[7:15]),
-            print "{0:02x}{1:02x}{2:02x}{3:02x}{4:02x}{5:02x}{6:02x}{7:02x}".format(*bytes[15:23]),
-            print "{0:02x}{1:02x}{2:02x}{3:02x}".format(*bytes[23:27]),
-            if icao in self.icao_table:
-                reg, typ, tail = self.icao_table[icao]
-                print "(Reg: " + reg + ", Type: " + typ + ", Tail: " + tail + ")",
-            print
-
-            packet_data = ["$FLM", datetime.utcfromtimestamp(time).isoformat() + 'Z', self.rxid, str(channel), icao, str(lat), str(lon), str(alt), raw_hex]
-            return ",".join(packet_data) + "\r\n"
+        packet_data = ["$FLM", datetime.utcfromtimestamp(time).isoformat() + 'Z', self.rxid, str(channel), icao, str(lat), str(lon), str(alt), raw_hex]
+        return ",".join(packet_data) + "\r\n"
 
     def crc16(self, message):
         poly = 0x1021
@@ -191,7 +218,7 @@ class packetize(gr.basic_block):
 
     def decrypt_packet(self, bytes, key):
         v = []
-        result = bytes[:]
+        result = list(bytes)
         for x in range(5):
             v.append((bytes[4*x+10] << 24) | (bytes[4*x+9] << 16) | (bytes[4*x+8] << 8) | bytes[4*x+7])
         raw_xxtea(v, -5, key)
@@ -215,10 +242,12 @@ class packetize(gr.basic_block):
             vs = (vs << vsmult)
         else:
             vs -= 0x400
-        stealth = False # Not yet sure where this is now.
+        no_track = bool(bytes[5] & 0b01000000)
+        stealth  = bool(bytes[5] & 0b00100000)
         ns = [b if b < 0x80 else (b - 0x100) for b in bytes[16:20]]
         ew = [b if b < 0x80 else (b - 0x100) for b in bytes[20:24]]
-        return icao, lat, lon, alt, vs, stealth, typ, ns, ew, status
+        unk = ((bytes[5] & 0b00011100) << 8) | ((bytes[14] & 0b11110000) << 2) | (bytes[15] & 0b00111111)
+        return icao, lat, lon, alt, vs, no_track, stealth, typ, ns, ew, status, unk
 
     def recover_lat(self, recv_lat):
         round_lat = self.reflat >> 7
