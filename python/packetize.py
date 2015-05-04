@@ -155,7 +155,7 @@ class packetize(gr.basic_block):
                 key = make_key(int(time) + offset*64, (in_bytes[4] << 16) | (in_bytes[3] << 8))
                 bytes = self.decrypt_packet(in_bytes, key)
                 icao, lat, lon, alt, vs, no_track, stealth, typ, ns, ew, status, unk = self.extract_values(bytes[3:27])
-                if unk == 0x0400:
+                if unk in [0x0400, 0x1400]:
                     print "Time offset: " + str(offset*64),
                     self.last_offset = offset
 
