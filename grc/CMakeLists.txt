@@ -18,5 +18,5 @@
 # Boston, MA 02110-1301, USA.
 
 install(FILES
-    flarm_packetize.xml DESTINATION share/gnuradio/grc/blocks
+    flarm_packetize.block.yml DESTINATION share/gnuradio/grc/blocks
 )

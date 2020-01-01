@@ -35,7 +35,11 @@ if(NOT flarm_sources)
 endif(NOT flarm_sources)
 
 add_library(gnuradio-flarm SHARED ${flarm_sources})
-target_link_libraries(gnuradio-flarm ${Boost_LIBRARIES} ${GNURADIO_ALL_LIBRARIES})
+target_link_libraries(gnuradio-flarm ${Boost_LIBRARIES} gnuradio::gnuradio-runtime gnuradio::gnuradio-blocks gnuradio::gnuradio-filter gnuradio::gnuradio-blocks gnuradio::gnuradio-fft volk)
+target_include_directories(gnuradio-flarm
+    PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
+    PUBLIC $<INSTALL_INTERFACE:include>
+  )
 set_target_properties(gnuradio-flarm PROPERTIES DEFINE_SYMBOL "gnuradio_flarm_EXPORTS")
 
 if(APPLE)
@@ -65,14 +69,10 @@ list(APPEND test_flarm_sources
     ${CMAKE_CURRENT_SOURCE_DIR}/qa_flarm.cc
 )
 
-add_executable(test-flarm ${test_flarm_sources})
+list(APPEND GR_TEST_TARGET_DEPS flarm)
 
-target_link_libraries(
-  test-flarm
-  ${GNURADIO_RUNTIME_LIBRARIES}
-  ${Boost_LIBRARIES}
-  ${CPPUNIT_LIBRARIES}
-  gnuradio-flarm
-)
-
-GR_ADD_TEST(test_flarm test-flarm)
+foreach(qa_file ${test_flarm_sources})
+    GR_ADD_CPP_TEST("flarm_${qa_file}"
+        ${CMAKE_CURRENT_SOURCE_DIR}/${qa_file}
+    )
+endforeach(qa_file)

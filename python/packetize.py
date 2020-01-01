@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
 # Copyright 2014 Clayton Smith.
@@ -146,7 +146,7 @@ class packetize(gr.basic_block):
     def process_packet(self, channel, bits, time):
         in_bytes = numpy.packbits(bits)
         if self.crc16(in_bytes) != 0:
-            print "Invalid CRC!"
+            print("Invalid CRC!")
             return ""
 
         raw_hex = "".join(["{0:02x}".format(byte) for byte in in_bytes])
@@ -156,43 +156,43 @@ class packetize(gr.basic_block):
                 bytes = self.decrypt_packet(in_bytes, key)
                 icao, lat, lon, alt, vs, no_track, stealth, typ, ns, ew, status, unk = self.extract_values(bytes[3:27])
                 if unk in [0x0000, 0x0400, 0x1000, 0x1400]:
-                    print "Time offset: " + str(offset*64),
+                    print("Time offset: " + str(offset*64)+" ")
                     self.last_offset = offset
 
                     lat = self.recover_lat(lat)
                     lon = self.recover_lon(lon)
 
-                    print datetime.utcfromtimestamp(time).isoformat() + 'Z',
-                    print "Ch.{0:02}".format(channel),
-                    print "ICAO: " + icao,
-                    print "Lat: " + str(lat),
-                    print "Lon: " + str(lon),
-                    print "Alt: " + str(alt) + "m",
-                    print "VS: " + str(vs),
-                    print "No-track: " + str(no_track),
-                    print "Stealth: " + str(stealth),
-                    print "Type: " + str(typ),
-                    print "GPS status: " + str(status),
-                    print "North/South speeds: {0},{1},{2},{3}".format(*ns),
-                    print "East/West speeds: {0},{1},{2},{3}".format(*ew),
-                    print "Unknown: {0:04x}".format(unk),
-                    print "Raw: {0:02x}".format(bytes[6]),
-                    print "{0:02x}{1:02x}{2:02x}{3:02x}{4:02x}{5:02x}{6:02x}{7:02x}".format(*bytes[7:15]),
-                    print "{0:02x}{1:02x}{2:02x}{3:02x}{4:02x}{5:02x}{6:02x}{7:02x}".format(*bytes[15:23]),
-                    print "{0:02x}{1:02x}{2:02x}{3:02x}".format(*bytes[23:27]),
+                    print(datetime.utcfromtimestamp(time).isoformat() + 'Z'+" ")
+                    print("Ch.{0:02}".format(channel)+" ")
+                    print("ICAO: " + icao+" ")
+                    print("Lat: " + str(lat)+" ")
+                    print("Lon: " + str(lon)+" ")
+                    print("Alt: " + str(alt) + "m"+" ")
+                    print("VS: " + str(vs)+" ")
+                    print("No-track: " + str(no_track)+" ")
+                    print("Stealth: " + str(stealth)+" ")
+                    print("Type: " + str(typ)+" ")
+                    print("GPS status: " + str(status)+" ")
+                    print("North/South speeds: {0},{1},{2},{3}".format(*ns)+" ")
+                    print("East/West speeds: {0},{1},{2},{3}".format(*ew)+" ")
+                    print("Unknown: {0:04x}".format(unk)+" ")
+                    print("Raw: {0:02x}".format(bytes[6])+" ")
+                    print("{0:02x}{1:02x}{2:02x}{3:02x}{4:02x}{5:02x}{6:02x}{7:02x}".format(*bytes[7:15])+" ")
+                    print("{0:02x}{1:02x}{2:02x}{3:02x}{4:02x}{5:02x}{6:02x}{7:02x}".format(*bytes[15:23])+" ")
+                    print("{0:02x}{1:02x}{2:02x}{3:02x}".format(*bytes[23:27])+" ")
                     if icao in self.icao_table:
                         reg, typ, tail = self.icao_table[icao]
-                        print "(Reg: " + reg + ", Type: " + typ + ", Tail: " + tail + ")",
-                    print
+                        print("(Reg: " + reg + ", Type: " + typ + ", Tail: " + tail + ")"+" ")
+                    print()
 
                     break
             else:
-                print "Couldn't decrypt packet!"
+                print("Couldn't decrypt packet!")
                 icao, _, _, _, _, _, _, _, _, _, _, _ = self.extract_values(in_bytes[3:27])
                 lat, lon, alt = -1, -1, -1
 
         else:
-            print "Don't know how to decrypt packet type {0:02x}".format(in_bytes[6])
+            print("Don't know how to decrypt packet type {0:02x}".format(in_bytes[6]))
             icao, _, _, _, _, _, _, _, _, _, _, _ = self.extract_values(in_bytes[3:27])
             lat, lon, alt = -1, -1, -1
 
@@ -309,4 +309,4 @@ if __name__ == "__main__":
             fields = line.rstrip().split(',')
             time, bits = iso_to_unix(fields[1]), hex_to_bits(fields[8])
             result = p.process_packet(0, bits, time)
-            print result.rstrip()
+            print(result.rstrip())

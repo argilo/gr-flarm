@@ -31,9 +31,9 @@ try:
     from dl import RTLD_GLOBAL as _RTLD_GLOBAL
 except ImportError:
     try:
-	from DLFCN import RTLD_GLOBAL as _RTLD_GLOBAL
+        from DLFCN import RTLD_GLOBAL as _RTLD_GLOBAL
     except ImportError:
-	pass
+        pass
 
 if _RTLD_GLOBAL != 0:
     _dlopenflags = sys.getdlopenflags()
@@ -44,12 +44,12 @@ if _RTLD_GLOBAL != 0:
 # import swig generated symbols into the flarm namespace
 try:
 	# this might fail if the module is python-only
-	from flarm_swig import *
+	from flarm.flarm_swig import *
 except ImportError:
 	pass
 
 # import any pure python here
-from packetize import packetize
+from .packetize import packetize
 #
 
 # ----------------------------------------------------------------
