@@ -45,7 +45,13 @@ endif()
 ########################################################################
 # Install directories
 ########################################################################
-find_package(Gnuradio "3.8" REQUIRED COMPONENTS blocks filter fft CONFIG)
+find_package(Gnuradio "3.8" COMPONENTS blocks filter fft CONFIG)
+if(NOT Gnuradio_FOUND)
+    find_package(Gnuradio "3.9" COMPONENTS blocks filter fft CONFIG)
+    if(NOT Gnuradio_FOUND)
+        message(FATAL_ERROR "Unable to find GNURadio")
+    ENDIF(NOT Gnuradio_FOUND)
+ENDIF(NOT Gnuradio_FOUND)
 include(GrPlatform) #define LIB_SUFFIX
 set(GR_LIBRARY_DIR      lib${LIB_SUFFIX})
 set(GR_INCLUDE_DIR      include/flarm)
