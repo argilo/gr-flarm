@@ -19,6 +19,8 @@
 # Boston, MA 02110-1301, USA.
 #
 
+from __future__ import print_function
+
 import numpy
 import struct
 from gnuradio import gr
@@ -156,33 +158,33 @@ class packetize(gr.basic_block):
                 bytes = self.decrypt_packet(in_bytes, key)
                 icao, lat, lon, alt, vs, no_track, stealth, typ, ns, ew, status, unk = self.extract_values(bytes[3:27])
                 if unk in [0x0000, 0x0400, 0x1000, 0x1400]:
-                    print("Time offset: " + str(offset*64)+" ")
+                    print("Time offset: " + str(offset*64), end=" ")
                     self.last_offset = offset
 
                     lat = self.recover_lat(lat)
                     lon = self.recover_lon(lon)
 
-                    print(datetime.utcfromtimestamp(time).isoformat() + 'Z'+" ")
-                    print("Ch.{0:02}".format(channel)+" ")
-                    print("ICAO: " + icao+" ")
-                    print("Lat: " + str(lat)+" ")
-                    print("Lon: " + str(lon)+" ")
-                    print("Alt: " + str(alt) + "m"+" ")
-                    print("VS: " + str(vs)+" ")
-                    print("No-track: " + str(no_track)+" ")
-                    print("Stealth: " + str(stealth)+" ")
-                    print("Type: " + str(typ)+" ")
-                    print("GPS status: " + str(status)+" ")
-                    print("North/South speeds: {0},{1},{2},{3}".format(*ns)+" ")
-                    print("East/West speeds: {0},{1},{2},{3}".format(*ew)+" ")
-                    print("Unknown: {0:04x}".format(unk)+" ")
-                    print("Raw: {0:02x}".format(bytes[6])+" ")
-                    print("{0:02x}{1:02x}{2:02x}{3:02x}{4:02x}{5:02x}{6:02x}{7:02x}".format(*bytes[7:15])+" ")
-                    print("{0:02x}{1:02x}{2:02x}{3:02x}{4:02x}{5:02x}{6:02x}{7:02x}".format(*bytes[15:23])+" ")
-                    print("{0:02x}{1:02x}{2:02x}{3:02x}".format(*bytes[23:27])+" ")
+                    print(datetime.utcfromtimestamp(time).isoformat() + 'Z', end=" ")
+                    print("Ch.{0:02}".format(channel), end=" ")
+                    print("ICAO: " + icao, end=" ")
+                    print("Lat: " + str(lat), end=" ")
+                    print("Lon: " + str(lon), end=" ")
+                    print("Alt: " + str(alt) + "m", end=" ")
+                    print("VS: " + str(vs), end=" ")
+                    print("No-track: " + str(no_track), end=" ")
+                    print("Stealth: " + str(stealth), end=" ")
+                    print("Type: " + str(typ), end=" ")
+                    print("GPS status: " + str(status), end=" ")
+                    print("North/South speeds: {0},{1},{2},{3}".format(*ns), end=" ")
+                    print("East/West speeds: {0},{1},{2},{3}".format(*ew), end=" ")
+                    print("Unknown: {0:04x}".format(unk), end=" ")
+                    print("Raw: {0:02x}".format(bytes[6]), end=" ")
+                    print("{0:02x}{1:02x}{2:02x}{3:02x}{4:02x}{5:02x}{6:02x}{7:02x}".format(*bytes[7:15]), end=" ")
+                    print("{0:02x}{1:02x}{2:02x}{3:02x}{4:02x}{5:02x}{6:02x}{7:02x}".format(*bytes[15:23]), end=" ")
+                    print("{0:02x}{1:02x}{2:02x}{3:02x}".format(*bytes[23:27]), end=" ")
                     if icao in self.icao_table:
                         reg, typ, tail = self.icao_table[icao]
-                        print("(Reg: " + reg + ", Type: " + typ + ", Tail: " + tail + ")"+" ")
+                        print("(Reg: " + reg + ", Type: " + typ + ", Tail: " + tail + ")", end=" ")
                     print()
 
                     break
