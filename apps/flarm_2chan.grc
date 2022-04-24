@@ -1,6 +1,7 @@
 options:
   parameters:
     author: ''
+    catch_exceptions: 'True'
     category: Custom
     cmake_opt: ''
     comment: ''
@@ -111,7 +112,7 @@ blocks:
     gui_hint: 0,1,1,1
     label: Freq. correction
     min_len: '200'
-    orient: Qt.Horizontal
+    orient: QtCore.Qt.Horizontal
     rangeType: float
     start: '-100'
     step: '200'
@@ -144,7 +145,7 @@ blocks:
     gui_hint: 0,0,1,1
     label: RTL-SDR Gain
     min_len: '200'
-    orient: Qt.Horizontal
+    orient: QtCore.Qt.Horizontal
     rangeType: float
     start: '0'
     step: '124'
@@ -446,7 +447,7 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    ant0: LNAW
+    ant0: TX/RX
     ant1: ''
     ant10: ''
     ant11: ''
@@ -804,7 +805,7 @@ blocks:
     affinity: ''
     alias: ''
     atten: '100'
-    bus_conns: '[[0,],]'
+    bus_structure_source: '[[0,],]'
     ch_map: '[]'
     comment: ''
     maxoutbuf: '0'
@@ -872,6 +873,7 @@ blocks:
     minoutbuf: '0'
     name: '"FFT Plot"'
     nconnections: '1'
+    norm_window: 'False'
     showports: 'False'
     tr_chan: '0'
     tr_level: '0.0'
@@ -890,7 +892,7 @@ blocks:
     width7: '1'
     width8: '1'
     width9: '1'
-    wintype: firdes.WIN_BLACKMAN_hARRIS
+    wintype: window.WIN_BLACKMAN_hARRIS
     ymax: '10'
     ymin: '-140'
   states:
@@ -953,7 +955,7 @@ blocks:
     showports: 'False'
     type: complex
     update_time: '0.10'
-    wintype: firdes.WIN_BLACKMAN_hARRIS
+    wintype: window.WIN_BLACKMAN_hARRIS
   states:
     bus_sink: false
     bus_source: false
@@ -1014,7 +1016,7 @@ blocks:
     showports: 'False'
     type: complex
     update_time: '0.10'
-    wintype: firdes.WIN_BLACKMAN_hARRIS
+    wintype: window.WIN_BLACKMAN_hARRIS
   states:
     bus_sink: false
     bus_source: false
@@ -1080,3 +1082,4 @@ connections:
 
 metadata:
   file_format: 1
+  grc_version: v3.11.0.0git-46-g614681ba
