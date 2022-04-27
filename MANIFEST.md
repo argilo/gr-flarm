@@ -1,17 +1,17 @@
-title: The FLARM OOT Module
-brief: Short description of gr-flarm
-tags: # Tags are arbitrary, but look at CGRAN what other authors are using
-  - sdr
+title: gr-flarm
+brief: A GNU Radio implementation of the FLARM protocol
+tags:
+  - FLARM
+  - aviation
 author:
-  - Author Name <authors@email.address>
+  - Clayton Smith <argilo@gmail.com>
 copyright_owner:
-  - Copyright Owner 1
-license:
-gr_supported_version: # Put a comma separated list of supported GR versions here
-#repo: # Put the URL of the repository here, or leave blank for default
-#website: <module_website> # If you have a separate project website, put it here
-#icon: <icon_url> # Put a URL to a square image here that will be used as an icon on CGRAN
+  - Clayton Smith <argilo@gmail.com>
+dependencies:
+  - gnuradio (>= 3.10.0)
+license: GPLv3
+repo: https://github.com/argilo/gr-flarm.git
+stable_release: HEAD
 ---
-A longer, multi-line description of gr-flarm.
-You may use some *basic* Markdown here.
-If left empty, it will try to find a README file instead.
+The goal of this project is to implement a receiver for FLARM signals.
+Version 6 of the protocol is implemented.

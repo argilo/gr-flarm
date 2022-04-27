@@ -377,43 +377,6 @@ blocks:
     coordinate: [483, 366]
     rotation: 270
     state: enabled
-- name: blocks_socket_pdu_0
-  id: blocks_socket_pdu
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    host: 127.0.0.1
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    mtu: '10000'
-    port: '12345'
-    tcp_no_delay: 'False'
-    type: TCP_SERVER
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1569, 1065]
-    rotation: 0
-    state: true
-- name: blocks_tagged_stream_to_pdu_0
-  id: blocks_tagged_stream_to_pdu
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    tag: packet_len
-    type: byte
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1548, 1319]
-    rotation: 0
-    state: true
 - name: digital_binary_slicer_fb_0
   id: digital_binary_slicer_fb
   parameters:
@@ -650,6 +613,26 @@ blocks:
     coordinate: [1216, 1105]
     rotation: 0
     state: enabled
+- name: network_socket_pdu_0
+  id: network_socket_pdu
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    host: 127.0.0.1
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    mtu: '10000'
+    port: '12345'
+    tcp_no_delay: 'False'
+    type: TCP_SERVER
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1552, 916.0]
+    rotation: 0
+    state: true
 - name: osmosdr_source_1
   id: osmosdr_source
   parameters:
@@ -1006,7 +989,24 @@ blocks:
     bus_structure: null
     coordinate: [600, 36.0]
     rotation: 0
-    state: enabled
+    state: disabled
+- name: pdu_tagged_stream_to_pdu_0
+  id: pdu_tagged_stream_to_pdu
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    tag: packet_len
+    type: byte
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1632, 1412.0]
+    rotation: 0
+    state: true
 - name: pfb_channelizer_ccf_0
   id: pfb_channelizer_ccf
   parameters:
@@ -1275,6 +1275,49 @@ blocks:
     coordinate: [608, 268.0]
     rotation: 0
     state: disabled
+- name: soapy_custom_source_0_0
+  id: soapy_custom_source
+  parameters:
+    affinity: ''
+    agc0: 'True'
+    agc1: 'False'
+    alias: ''
+    antenna0: RX
+    antenna1: ''
+    bandwidth0: '0'
+    bandwidth1: '0'
+    center_freq0: center_freq
+    center_freq1: '0'
+    comment: ''
+    dc_offset0: '0'
+    dc_offset1: '0'
+    dc_removal0: 'False'
+    dc_removal1: 'True'
+    dev_args: ''
+    driver: rtlsdr
+    freq_correction0: '0'
+    freq_correction1: '0'
+    gain0: rx_gain
+    gain1: '0'
+    iq_balance0: '0'
+    iq_balance1: '0'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    nchan: '1'
+    samp_rate: samp_rate
+    settings0: ''
+    settings1: ''
+    stream_args: ''
+    tune_args0: ''
+    tune_args1: ''
+    type: fc32
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [592, 160.0]
+    rotation: 0
+    state: true
 - name: tab
   id: qtgui_tab_widget
   parameters:
@@ -1757,7 +1800,6 @@ connections:
 - [analog_sig_source_x_0, '0', blocks_multiply_xx_0, '1']
 - [blocks_add_xx_0, '0', qtgui_waterfall_sink_x_1, '0']
 - [blocks_multiply_xx_0, '0', pfb_channelizer_ccf_0, '0']
-- [blocks_tagged_stream_to_pdu_0, pdus, blocks_socket_pdu_0, pdus]
 - [digital_binary_slicer_fb_0, '0', flarm_packetize_0, '0']
 - [digital_binary_slicer_fb_0_0, '0', flarm_packetize_0, '1']
 - [digital_binary_slicer_fb_0_0_0, '0', flarm_packetize_0, '4']
@@ -1771,10 +1813,11 @@ connections:
 - [digital_clock_recovery_mm_xx_0_1, '0', digital_binary_slicer_fb_0_1, '0']
 - [digital_clock_recovery_mm_xx_0_2, '0', digital_binary_slicer_fb_0_2, '0']
 - [flarm_packetize_0, '0', blocks_file_sink_0, '0']
-- [flarm_packetize_0, '0', blocks_tagged_stream_to_pdu_0, '0']
+- [flarm_packetize_0, '0', pdu_tagged_stream_to_pdu_0, '0']
 - [osmosdr_source_1, '0', blocks_multiply_xx_0, '0']
 - [osmosdr_source_1, '0', qtgui_freq_sink_x_0, '0']
 - [osmosdr_source_1, '0', qtgui_waterfall_sink_x_0, '0']
+- [pdu_tagged_stream_to_pdu_0, pdus, network_socket_pdu_0, pdus]
 - [pfb_channelizer_ccf_0, '0', analog_quadrature_demod_cf_0, '0']
 - [pfb_channelizer_ccf_0, '0', blocks_add_xx_0, '0']
 - [pfb_channelizer_ccf_0, '1', analog_quadrature_demod_cf_0_0, '0']
@@ -1790,10 +1833,13 @@ connections:
 - [soapy_custom_source_0, '0', blocks_multiply_xx_0, '0']
 - [soapy_custom_source_0, '0', qtgui_freq_sink_x_0, '0']
 - [soapy_custom_source_0, '0', qtgui_waterfall_sink_x_0, '0']
+- [soapy_custom_source_0_0, '0', blocks_multiply_xx_0, '0']
+- [soapy_custom_source_0_0, '0', qtgui_freq_sink_x_0, '0']
+- [soapy_custom_source_0_0, '0', qtgui_waterfall_sink_x_0, '0']
 - [uhd_usrp_source_0, '0', blocks_multiply_xx_0, '0']
 - [uhd_usrp_source_0, '0', qtgui_freq_sink_x_0, '0']
 - [uhd_usrp_source_0, '0', qtgui_waterfall_sink_x_0, '0']
 
 metadata:
   file_format: 1
-  grc_version: v3.11.0.0git-46-g614681ba
+  grc_version: v3.11.0.0git-124-g0d60e80d
