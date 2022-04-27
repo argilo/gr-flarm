@@ -43,7 +43,7 @@ asserts:
 - ${ -180 <= reflon <= 180 }
 
 templates:
-    imports: import flarm
+    imports: import gnuradio.flarm as flarm
     make: flarm.packetize(${num_channels}, ${first_channel}, ${rxid}, ${reflat}, ${reflon})
 
 file_format: 1

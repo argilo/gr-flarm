@@ -1,6 +1,7 @@
 options:
   parameters:
     author: ''
+    catch_exceptions: 'True'
     category: Custom
     cmake_opt: ''
     comment: ''
@@ -39,7 +40,7 @@ blocks:
     gui_hint: 1,1,1,1
     label: BB Gain
     min_len: '200'
-    orient: Qt.Horizontal
+    orient: QtCore.Qt.Horizontal
     rangeType: float
     start: '0'
     step: '1'
@@ -108,7 +109,7 @@ blocks:
     gui_hint: 0,1,1,1
     label: Freq. correction
     min_len: '200'
-    orient: Qt.Horizontal
+    orient: QtCore.Qt.Horizontal
     rangeType: float
     start: '-100'
     step: '200'
@@ -129,7 +130,7 @@ blocks:
     gui_hint: 1,0,1,1
     label: IF Gain
     min_len: '200'
-    orient: Qt.Horizontal
+    orient: QtCore.Qt.Horizontal
     rangeType: float
     start: '0'
     step: '1'
@@ -150,7 +151,7 @@ blocks:
     gui_hint: 0,0,1,1
     label: Preamp
     min_len: '200'
-    orient: Qt.Horizontal
+    orient: QtCore.Qt.Horizontal
     rangeType: float
     start: '0'
     step: '1'
@@ -212,7 +213,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [914, 6]
+    coordinate: [1184, 4.0]
     rotation: 0
     state: enabled
 - name: blocks_complex_to_real_0
@@ -228,7 +229,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [744, 11]
+    coordinate: [896, 16.0]
     rotation: 0
     state: enabled
 - name: blocks_file_sink_0
@@ -545,6 +546,26 @@ blocks:
     coordinate: [1073, 301]
     rotation: 0
     state: enabled
+- name: network_socket_pdu_0
+  id: network_socket_pdu
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    host: 127.0.0.1
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    mtu: '10000'
+    port: '12345'
+    tcp_no_delay: 'False'
+    type: TCP_SERVER
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1464, 252.0]
+    rotation: 0
+    state: true
 - name: osmosdr_source_1
   id: osmosdr_source
   parameters:
@@ -899,16 +920,33 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [187, 39]
+    coordinate: [0, 80.0]
     rotation: 0
-    state: enabled
+    state: disabled
+- name: pdu_tagged_stream_to_pdu_0
+  id: pdu_tagged_stream_to_pdu
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    tag: packet_len
+    type: byte
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1544, 748.0]
+    rotation: 0
+    state: true
 - name: pfb_channelizer_ccf_0
   id: pfb_channelizer_ccf
   parameters:
     affinity: ''
     alias: ''
     atten: '100'
-    bus_conns: '[[0,],]'
+    bus_structure_source: '[[0,],]'
     ch_map: '[]'
     comment: ''
     maxoutbuf: '0'
@@ -916,12 +954,56 @@ blocks:
     nchans: channels
     osr: '1.0'
     samp_delay: '0'
-    taps: firdes.gaussian(1, 4 * samp_rate / channel_rate, 0.5, 8 * samp_rate / channel_rate)
+    taps: firdes.gaussian(1, 4 * samp_rate / channel_rate, 0.5, int(8 * samp_rate
+      / channel_rate))
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
     coordinate: [212, 301]
+    rotation: 0
+    state: enabled
+- name: soapy_custom_source_0_0
+  id: soapy_custom_source
+  parameters:
+    affinity: ''
+    agc0: 'True'
+    agc1: 'False'
+    alias: ''
+    antenna0: RX
+    antenna1: ''
+    bandwidth0: '0'
+    bandwidth1: '0'
+    center_freq0: center_freq
+    center_freq1: '0'
+    comment: ''
+    dc_offset0: '0'
+    dc_offset1: '0'
+    dc_removal0: 'False'
+    dc_removal1: 'True'
+    dev_args: ''
+    driver: lime
+    freq_correction0: '0'
+    freq_correction1: '0'
+    gain0: rx_gain
+    gain1: '0'
+    iq_balance0: '0'
+    iq_balance1: '0'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    nchan: '1'
+    samp_rate: samp_rate
+    settings0: ''
+    settings1: ''
+    stream_args: ''
+    tune_args0: ''
+    tune_args1: ''
+    type: fc32
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [232, 16.0]
     rotation: 0
     state: enabled
 
@@ -947,8 +1029,10 @@ connections:
 - [flarm_channel_rx_0_2_0, '0', flarm_packetize_0, '12']
 - [flarm_channel_rx_0_3, '0', flarm_packetize_0, '8']
 - [flarm_packetize_0, '0', blocks_file_sink_0, '0']
+- [flarm_packetize_0, '0', pdu_tagged_stream_to_pdu_0, '0']
 - [osmosdr_source_1, '0', blocks_keep_one_in_n_0, '0']
 - [osmosdr_source_1, '0', blocks_multiply_xx_0, '1']
+- [pdu_tagged_stream_to_pdu_0, pdus, network_socket_pdu_0, pdus]
 - [pfb_channelizer_ccf_0, '0', flarm_channel_rx_0, '0']
 - [pfb_channelizer_ccf_0, '1', flarm_channel_rx_0_0, '0']
 - [pfb_channelizer_ccf_0, '10', flarm_channel_rx_0_1_1, '0']
@@ -965,6 +1049,9 @@ connections:
 - [pfb_channelizer_ccf_0, '7', flarm_channel_rx_0_0_0_0, '0']
 - [pfb_channelizer_ccf_0, '8', flarm_channel_rx_0_3, '0']
 - [pfb_channelizer_ccf_0, '9', flarm_channel_rx_0_0_2, '0']
+- [soapy_custom_source_0_0, '0', blocks_keep_one_in_n_0, '0']
+- [soapy_custom_source_0_0, '0', blocks_multiply_xx_0, '1']
 
 metadata:
   file_format: 1
+  grc_version: v3.11.0.0git-124-g0d60e80d
