@@ -151,7 +151,7 @@ class packetize(gr.basic_block):
             return ""
 
         raw_hex = "".join(["{0:02x}".format(byte) for byte in in_bytes])
-        if in_bytes[6] == 0x10:
+        if in_bytes[6] in (0x10, 0x20):
             for offset in self.time_offsets(self.last_offset):
                 key = make_key(int(time) + offset*64, (in_bytes[4] << 16) | (in_bytes[3] << 8))
                 bytes = self.decrypt_packet(in_bytes, key)
