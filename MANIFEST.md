@@ -8,7 +8,7 @@ author:
 copyright_owner:
   - Clayton Smith <argilo@gmail.com>
 dependencies:
-  - gnuradio (>= 3.7.0)
+  - gnuradio (>= 3.10.0)
 license: GPLv3
 repo: https://github.com/argilo/gr-flarm.git
 stable_release: HEAD

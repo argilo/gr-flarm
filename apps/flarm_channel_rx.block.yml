@@ -1,0 +1,25 @@
+id: flarm_channel_rx
+label: 1-Ch Rx
+category: FLARM
+
+parameters: []
+
+inputs:
+-   label: in
+    dtype: complex
+    vlen: 1
+
+outputs:
+-   label: out
+    dtype: byte
+    vlen: 1
+
+templates:
+    imports: 'from flarm_channel_rx import flarm_channel_rx  # grc-generated hier_block'
+    make: flarm_channel_rx()
+    callbacks: []
+
+documentation: /home/hydra/gnuradio/src/modules/gr-flarm/apps/flarm_channel_rx.py
+grc_source: /home/hydra/gnuradio/src/modules/gr-flarm/apps/flarm_channel_rx.grc
+
+file_format: 1
