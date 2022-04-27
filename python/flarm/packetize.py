@@ -134,23 +134,6 @@ class packetize(gr.basic_block):
             ninput_items_required[i] = 5000
         return ninput_items_required
 
-    def general_work(self, input_items, output_items):
-        # Wait until we get at least one packet worth of Manchester bits
-        if len(input_items[0]) < 464:
-            return 0
-
-        output = ""
-        for channel in range(len(input_items)):
-            index = input_items[channel].tostring().find(self.sync_word, 0, -464+48)
-            while index != -1:
-                output = output + self.manchester_demod_packet(channel + self.first_channel, input_items[channel][index:index+464], time.time())
-                index = input_items[channel].tostring().find(self.sync_word, index+464, -464+48)
-            self.consume(channel, len(input_items[channel])-463)
-
-        output = numpy.array([ord(c) for c in output], dtype=numpy.int8)
-        output_items[0][0:len(output)] = output
-        return len(output)
-
     def manchester_demod_packet(self, channel, man_bits, time):
         for x in range(0, len(man_bits), 2):
             if man_bits[x] == man_bits[x+1]:
