@@ -115,7 +115,7 @@ blocks:
     orient: QtCore.Qt.Horizontal
     rangeType: float
     start: '-100'
-    step: '200'
+    step: '1'
     stop: '100'
     value: '0'
     widget: counter_slider
@@ -148,9 +148,9 @@ blocks:
     orient: QtCore.Qt.Horizontal
     rangeType: float
     start: '0'
-    step: '124'
+    step: '0.4'
     stop: '49.6'
-    value: '49.6'
+    value: '30.0'
     widget: counter_slider
   states:
     bus_sink: false
@@ -1044,7 +1044,7 @@ blocks:
     alpha7: '1.0'
     alpha8: '1.0'
     alpha9: '1.0'
-    autoscale: 'True'
+    autoscale: 'False'
     average: '1.0'
     axislabels: 'True'
     bw: samp_rate
@@ -1279,7 +1279,7 @@ blocks:
   id: soapy_custom_source
   parameters:
     affinity: ''
-    agc0: 'True'
+    agc0: 'False'
     agc1: 'False'
     alias: ''
     antenna0: RX
@@ -1295,7 +1295,7 @@ blocks:
     dc_removal1: 'True'
     dev_args: ''
     driver: rtlsdr
-    freq_correction0: '0'
+    freq_correction0: corr
     freq_correction1: '0'
     gain0: rx_gain
     gain1: '0'

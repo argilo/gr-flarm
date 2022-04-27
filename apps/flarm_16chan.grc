@@ -954,8 +954,7 @@ blocks:
     nchans: channels
     osr: '1.0'
     samp_delay: '0'
-    taps: firdes.gaussian(1, 4 * samp_rate / channel_rate, 0.5, int(8 * samp_rate
-      / channel_rate))
+    taps: firdes.gaussian(1, 4 * samp_rate / channel_rate, 0.5, 8 * samp_rate // channel_rate)
   states:
     bus_sink: false
     bus_source: false
