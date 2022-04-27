@@ -124,15 +124,7 @@ class packetize(gr.basic_block):
         self.reflon = int(reflon * 1e7)
 
     def forecast(self, noutput_items, ninputs):
-        # ninputs is the number of input connections
-        # setup size of input_items[i] for work call
-        # the required number of input items is returned
-        #   in a list where each element represents the
-        #   number of required items for each input
-        ninput_items_required = [noutput_items] * ninputs
-        for i in range(ninputs):
-            ninput_items_required[i] = 5000
-        return ninput_items_required
+        return [5000] * ninputs
 
     def manchester_demod_packet(self, channel, man_bits, time):
         for x in range(0, len(man_bits), 2):
