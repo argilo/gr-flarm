@@ -2,7 +2,7 @@ options:
   parameters:
     author: ''
     catch_exceptions: 'True'
-    category: FLARM
+    category: '[FLARM]'
     cmake_opt: ''
     comment: ''
     copyright: ''
